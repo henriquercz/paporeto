@@ -30,7 +30,7 @@ export default function WelcomeScreen() {
           {/* Action Buttons */}
           <View style={styles.buttonContainer}>
             <Button
-              title="COMECE AGORA"
+              label="COMECE AGORA"
               onPress={() => router.push('/(auth)/register')}
               variant="primary"
               size="large"
@@ -39,7 +39,7 @@ export default function WelcomeScreen() {
             
             <Text style={styles.loginPrompt}>Já tem uma conta?</Text>
             <Button
-              title="LOGIN"
+              label="LOGIN"
               onPress={() => router.push('/(auth)/login')}
               variant="outline"
               size="large"

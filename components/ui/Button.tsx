@@ -1,13 +1,14 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, View } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, View, ActivityIndicator } from 'react-native';
 import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
 
 interface ButtonProps {
-  title: string;
+  label: string;
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'outline';
   size?: 'small' | 'medium' | 'large';
   disabled?: boolean;
+  isLoading?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
   iconLeft?: React.ReactNode;
@@ -15,11 +16,12 @@ interface ButtonProps {
 }
 
 export const Button: React.FC<ButtonProps> = ({
-  title,
+  label,
   onPress,
   variant = 'primary',
   size = 'medium',
   disabled = false,
+  isLoading = false,
   style,
   textStyle,
   iconLeft,
@@ -43,14 +45,18 @@ export const Button: React.FC<ButtonProps> = ({
     <TouchableOpacity
       style={buttonStyle}
       onPress={onPress}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       activeOpacity={0.8}
     >
-      <View style={styles.contentContainer}>
-        {iconLeft && <View style={styles.iconWrapper}>{iconLeft}</View>}
-        <Text style={textStyleCombined}>{title}</Text>
-        {iconRight && <View style={styles.iconWrapper}>{iconRight}</View>}
-      </View>
+      {isLoading ? (
+        <ActivityIndicator color={variant === 'primary' ? Colors.neutral.white : Colors.primary.dark} />
+      ) : (
+        <View style={styles.contentContainer}>
+          {iconLeft && <View style={styles.iconWrapper}>{iconLeft}</View>}
+          <Text style={textStyleCombined}>{label}</Text>
+          {iconRight && <View style={styles.iconWrapper}>{iconRight}</View>}
+        </View>
+      )}
     </TouchableOpacity>
   );
 };

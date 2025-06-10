@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert, Switch, Image, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { router } from 'expo-router';
 import { ArrowLeft, Bell, Crown, Settings, LogOut, User, Award, Calendar, TrendingUp, Edit2 } from 'lucide-react-native';
 import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { supabase, User as UserType, Pontos } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
+import { Tables } from '../../lib/database.types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import * as ImagePicker from 'expo-image-picker';
 
 
 export default function PerfilScreen() {
-  const [user, setUser] = useState<UserType | null>(null);
-  const [pontos, setPontos] = useState<Pontos[]>([]);
+  const [user, setUser] = useState<Tables<'users'> | null>(null);
+  const [pontos, setPontos] = useState<Tables<'pontos'>[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
 
@@ -31,7 +32,7 @@ export default function PerfilScreen() {
       const { data: userData } = await supabase
         .from('users')
         .select('*')
-        .eq('id', authUser.id)
+        .eq('auth_user_id', authUser.id)
         .single();
 
       if (userData) setUser(userData);
@@ -83,36 +84,84 @@ export default function PerfilScreen() {
       mediaTypes: ['images'], // Usando string literal minúscula
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.7,
+      quality: 0.7, // Reduz a qualidade para otimizar o tamanho
+      base64: true, // Solicita a string base64
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      const uri = result.assets[0].uri;
-      uploadAvatar(uri);
+      const asset = result.assets[0];
+      const uri = asset.uri;
+
+      console.log('--- DEBUG INÍCIO UPLOAD AVATAR (handlePickImage) ---');
+      console.log('ImagePicker Asset:', JSON.stringify(asset, null, 2));
+      console.log('Image URI:', uri);
+      uploadAvatar(uri, asset.mimeType || asset.type, asset.base64); // Passa o mimeType e base64
     }
   };
 
-  const uploadAvatar = async (uri: string) => {
+  const uploadAvatar = async (uri: string, assetMimeType?: string, base64Data?: string | null) => {
     if (!user) return;
     setLoading(true);
     try {
       const response = await fetch(uri);
       const blob = await response.blob();
-      const fileExt = uri.split('.').pop();
-      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-      const filePath = `${user.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      console.log('Blob Size (após fetch e .blob()):', blob.size);
+      console.log('Blob Type (do blob):', blob.type);
+      const fileExt = uri.split('.').pop()?.toLowerCase(); // Normalizar para minúsculas
+      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+      const filePath = `${user.auth_user_id}/${fileName}`;
+
+    // Lógica aprimorada para determinar o contentType
+    console.log('Asset MimeType recebido em uploadAvatar:', assetMimeType);
+    let determinedContentType = assetMimeType;
+    if (!determinedContentType && blob.type && blob.type !== 'application/octet-stream') {
+        determinedContentType = blob.type;
+    }
+    if ((!determinedContentType || determinedContentType === 'application/octet-stream') && fileExt) {
+        if (fileExt === 'jpg' || fileExt === 'jpeg') {
+            determinedContentType = 'image/jpeg';
+        } else if (fileExt === 'png') {
+            determinedContentType = 'image/png';
+        } else if (fileExt === 'gif') {
+            determinedContentType = 'image/gif';
+        } else if (fileExt === 'webp') {
+            determinedContentType = 'image/webp';
+        }
+        // Adicionar mais tipos conforme necessário
+    }
+    console.log('Determined ContentType para Upload:', determinedContentType);
+    console.log('File Path para Upload:', filePath);
+    console.log('--- DEBUG FIM UPLOAD AVATAR ---');
+
+      if (!base64Data) {
+        console.error('--- ERRO: Dados Base64 não fornecidos para uploadAvatar ---');
+        Alert.alert('Erro', 'Não foi possível processar a imagem para upload (Base64 ausente).');
+        setLoading(false);
+        return;
+      }
+
+      const dataUrl = `data:${assetMimeType || 'image/jpeg'};base64,${base64Data}`;
+      console.log('--- DEBUG: Data URL preparada para upload (primeiros 100 chars):', dataUrl.substring(0, 100));
+      // console.log('--- DEBUG: Comprimento da string Base64:', base64Data.length);
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, blob, {
-          cacheControl: '3600',
+        // Ao enviar uma Data URL, o Supabase SDK a decodifica. O terceiro argumento (fileOptions) ainda é útil.
+        .upload(filePath, dataUrl, {
           upsert: true,
-          contentType: blob.type, 
+          cacheControl: '3600',
+          contentType: assetMimeType || 'image/jpeg', // Adiciona o contentType explicitamente
         });
 
       if (uploadError) {
+        console.error('--- ERRO NO UPLOAD DO SUPABASE ---');
+        console.error('Detalhes do Erro:', JSON.stringify(uploadError, null, 2));
         throw uploadError;
       }
+
+      console.log('--- SUCESSO NO UPLOAD DO SUPABASE (segundo o SDK) ---');
+      console.log('Dados do Upload:', JSON.stringify(uploadData, null, 2));
 
       const { data: publicUrlData } = supabase.storage
         .from('avatars')
@@ -151,20 +200,15 @@ export default function PerfilScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <LinearGradient 
-          colors={[Colors.primary.light, Colors.primary.dark]} 
-          style={styles.header}
-        >
-          <SafeAreaView>
-            <View style={styles.headerContent}>
-              <TouchableOpacity onPress={() => router.back()}>
-                <ArrowLeft size={24} color={Colors.neutral.white} strokeWidth={2} />
-              </TouchableOpacity>
-              <Text style={styles.title}>Perfil</Text>
-              <View style={{ width: 24 }} />
-            </View>
-          </SafeAreaView>
-        </LinearGradient>
+        <View style={[styles.header, { backgroundColor: Colors.primary.dark }]}>
+          <View style={styles.headerContent}>
+            <TouchableOpacity onPress={() => router.back()}>
+              <ArrowLeft size={24} color={Colors.neutral.white} strokeWidth={2} />
+            </TouchableOpacity>
+            <Text style={styles.title}>Perfil</Text>
+            <View style={{ width: 24 }} />
+          </View>
+        </View>
         
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Carregando perfil...</Text>
@@ -175,10 +219,7 @@ export default function PerfilScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient 
-        colors={[Colors.primary.light, Colors.primary.dark]} 
-        style={styles.header}
-      >
+      <View style={[styles.header, { backgroundColor: Colors.primary.dark }]}>
         <SafeAreaView>
           <View style={styles.headerContent}>
             <TouchableOpacity onPress={() => router.back()}>
@@ -188,7 +229,7 @@ export default function PerfilScreen() {
             <View style={{ width: 24 }} />
           </View>
         </SafeAreaView>
-      </LinearGradient>
+      </View>
 
       <ScrollView style={styles.content}>
         {/* Informações do Usuário */}
@@ -268,27 +309,19 @@ export default function PerfilScreen() {
 
         {/* Premium */}
         <Card style={styles.premiumCard}>
-          <LinearGradient
-            colors={[Colors.primary.accent, '#FF6B35']}
-            style={styles.premiumGradient}
-          >
-            <View style={styles.premiumContent}>
-              <Crown size={32} color={Colors.neutral.white} strokeWidth={2} />
-              <View style={styles.premiumInfo}>
-                <Text style={styles.premiumTitle}>PREMIUM!</Text>
-                <Text style={styles.premiumPrice}>R$ 27,90</Text>
-                <Text style={styles.premiumPeriod}>Por mês, por 12 meses</Text>
-                <Text style={styles.premiumTotal}>Total de R$ 334,80</Text>
-                <Text style={styles.premiumAnnual}>Plano anual por: 309,90</Text>
-              </View>
+          <View style={[styles.premiumGradient, { backgroundColor: Colors.primary.dark }]}>
+            <Crown size={32} color={Colors.neutral.white} strokeWidth={2} />
+            <View style={styles.premiumInfo}>
+              <Text style={styles.premiumTitle}>PREMIUM!</Text>
+              <Text style={styles.premiumPrice}>R$ 27,90</Text>
+              <Text style={styles.premiumPeriod}>Por mês, por 12 meses</Text>
+              <Text style={styles.premiumTotal}>Total de R$ 334,80</Text>
+              <Text style={styles.premiumAnnual}>Plano anual por: 309,90</Text>
             </View>
             
             <View style={styles.premiumFeatures}>
               <View style={styles.premiumFeature}>
                 <Text style={styles.premiumFeatureText}>🚫 Curta o app sem anúncio</Text>
-              </View>
-              <View style={styles.premiumFeature}>
-                <Text style={styles.premiumFeatureText}>🎯 Criação ilimitada de metas</Text>
               </View>
               <View style={styles.premiumFeature}>
                 <Text style={styles.premiumFeatureText}>📞 Contato de profissionais</Text>
@@ -315,7 +348,7 @@ export default function PerfilScreen() {
                 style={styles.premiumButton}
               />
             </View>
-          </LinearGradient>
+          </View>
         </Card>
 
         {/* Últimas Conquistas */}

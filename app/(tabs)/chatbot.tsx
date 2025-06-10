@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { Send, Bot, User } from 'lucide-react-native';
 import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
 import { Card } from '@/components/ui/Card';
@@ -193,10 +193,7 @@ export default function ChatbotScreen() {
   if (carregandoHistorico) {
     return (
       <View style={styles.container}>
-        <LinearGradient 
-          colors={[Colors.primary.light, Colors.primary.dark]} 
-          style={styles.header}
-        >
+        <View style={[styles.header, { backgroundColor: Colors.primary.dark }]}>
           <SafeAreaView>
             <View style={styles.headerContent}>
               <Text style={styles.title}>Blob, seu melhor amigo</Text>
@@ -206,7 +203,7 @@ export default function ChatbotScreen() {
               </View>
             </View>
           </SafeAreaView>
-        </LinearGradient>
+        </View>
         
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Carregando conversa...</Text>
@@ -220,20 +217,17 @@ export default function ChatbotScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <LinearGradient 
-        colors={[Colors.primary.light, Colors.primary.dark]} 
-        style={styles.header}
-      >
+      <View style={[styles.header, { backgroundColor: Colors.primary.dark }]}>
         <SafeAreaView>
           <View style={styles.headerContent}>
-            <Text style={styles.title}>Apoio IA</Text>
+            <Text style={styles.title}>Blob, seu melhor amigo</Text>
             <View style={styles.statusOnline}>
               <View style={styles.statusIndicator} />
               <Text style={styles.statusText}>Online</Text>
             </View>
           </View>
         </SafeAreaView>
-      </LinearGradient>
+      </View>
 
       <ScrollView
         ref={scrollViewRef}

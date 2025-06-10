@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Image } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { router } from 'expo-router';
 
 import { Colors, Fonts, Spacing } from '@/constants/Colors';
@@ -8,10 +8,7 @@ import { Button } from '@/components/ui/Button';
 
 export default function WelcomeScreen() {
   return (
-    <LinearGradient 
-      colors={[Colors.primary.dark, '#0D1721']} // Gradiente de azul escuro para mais escuro 
-      style={styles.container}
-    >
+    <View style={[styles.container, { backgroundColor: '#68b0d8' }]}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.content}>
           {/* Logo/Icon Area */}
@@ -51,7 +48,7 @@ export default function WelcomeScreen() {
           </View>
         </View>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { router } from 'expo-router';
 import { Plus, Target, ChevronDown, Calendar, TrendingUp, Trash2 } from 'lucide-react-native';
 import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
@@ -9,18 +9,19 @@ import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import CriarMetaModal from '@/components/modals/CriarMetaModal';
-import { supabase, Meta } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
+import { Tables } from '../../lib/database.types';
 import { GeminiService } from '@/lib/gemini';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface UserProfileData {
-  tipo_vicio?: string;
-  nivel_dependencia?: string;
+  tipo_vicio?: string | null;
+  nivel_dependencia?: string | null;
 }
 
 export default function MetasScreen() {
-  const [metas, setMetas] = useState<Meta[]>([]);
+  const [metas, setMetas] = useState<Tables<'metas'>[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedMeta, setExpandedMeta] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -50,7 +51,7 @@ export default function MetasScreen() {
       const { data: userProfileData, error: userProfileError } = await supabase
         .from('users')
         .select('tipo_vicio, nivel_dependencia')
-        .eq('id', user.id)
+        .eq('auth_user_id', user.id)
         .single();
 
       if (userProfileError) {
@@ -128,7 +129,7 @@ export default function MetasScreen() {
     loadMetas();
   };
 
-  const calcularProgresso = (meta: Meta) => {
+  const calcularProgresso = (meta: Tables<'metas'>) => {
     if (!meta.data_inicio || !meta.objetivo_numerico) return { dias: 0, porcentagem: 0 };
     const dataInicio = new Date(meta.data_inicio);
     const hoje = new Date();
@@ -168,10 +169,7 @@ export default function MetasScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient 
-        colors={[Colors.primary.light, Colors.primary.dark]} 
-        style={styles.header}
-      >
+      <View style={[styles.header, { backgroundColor: Colors.primary.dark }]}>
         <SafeAreaView>
           <View style={styles.headerContent}>
             <Text style={styles.title}>METAS</Text>
@@ -180,7 +178,7 @@ export default function MetasScreen() {
             </TouchableOpacity>
           </View>
         </SafeAreaView>
-      </LinearGradient>
+      </View>
 
       <ScrollView
         style={styles.content}
@@ -314,8 +312,8 @@ export default function MetasScreen() {
           onClose={() => setIsCriarMetaModalVisible(false)}
           onMetaCriada={handleMetaCriada}
           userId={currentUserId}
-          tipoVicioPadrao={userProfile?.tipo_vicio}
-          nivelDependenciaPadrao={userProfile?.nivel_dependencia}
+          tipoVicioPadrao={userProfile?.tipo_vicio ?? undefined}
+          nivelDependenciaPadrao={userProfile?.nivel_dependencia ?? undefined}
         />
       )}
     </View>

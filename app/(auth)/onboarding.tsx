@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { router, useLocalSearchParams } from 'expo-router';
 import { Plus } from 'lucide-react-native';
 import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
@@ -237,10 +237,7 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <LinearGradient 
-      colors={[Colors.primary.light, Colors.primary.dark]} 
-      style={styles.container}
-    >
+    <View style={[styles.container, { backgroundColor: Colors.primary.dark }]}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <Text style={styles.title}>Configuração Inicial</Text>
@@ -263,7 +260,7 @@ export default function OnboardingScreen() {
           />
         </View>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 

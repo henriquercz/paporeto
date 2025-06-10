@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TextInput, Alert, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { router } from 'expo-router';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react-native';
 import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
@@ -42,10 +42,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <LinearGradient 
-      colors={[Colors.primary.dark, '#0D1721']} // Gradiente de azul escuro para mais escuro 
-      style={styles.container}
-    >
+    <View style={[styles.container, { backgroundColor: Colors.primary.dark }]}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -121,7 +118,7 @@ export default function LoginScreen() {
           </View>
         </View>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 

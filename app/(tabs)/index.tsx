@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, RefreshControl } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { router } from 'expo-router';
 import { Calendar, Award, Target, Plus, AlertCircle } from 'lucide-react-native';
 import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
-import { supabase, Meta, User, Pontos } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
+import { Tables } from '../../lib/database.types';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export default function HomeScreen() {
-  const [user, setUser] = useState<User | null>(null);
-  const [metas, setMetas] = useState<Meta[]>([]);
-  const [pontos, setPontos] = useState<Pontos[]>([]);
+  const [user, setUser] = useState<Tables<'users'> | null>(null);
+  const [metas, setMetas] = useState<Tables<'metas'>[]>([]);
+  const [pontos, setPontos] = useState<Tables<'pontos'>[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lembretes, setLembretes] = useState<any[]>([]); // Estado para futuros lembretes
@@ -32,7 +33,7 @@ export default function HomeScreen() {
       const { data: userData } = await supabase
         .from('users')
         .select('*')
-        .eq('id', authUser.id)
+        .eq('auth_user_id', authUser.id)
         .single();
 
       if (userData) setUser(userData);
@@ -69,7 +70,7 @@ export default function HomeScreen() {
     loadUserData();
   };
 
-  const calcularDiasSemRecaida = (meta: Meta) => {
+  const calcularDiasSemRecaida = (meta: Tables<'metas'>) => {
     const diasDecorridos = differenceInDays(new Date(), new Date(meta.data_inicio));
     return Math.max(0, diasDecorridos);
   };
@@ -78,10 +79,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient 
-        colors={[Colors.primary.light, Colors.primary.dark]} 
-        style={styles.header}
-      >
+      <View style={[styles.header, { backgroundColor: Colors.primary.dark }]}>
         <SafeAreaView>
           <View style={styles.headerContent}>
             <View style={styles.userInfo}>
@@ -94,7 +92,7 @@ export default function HomeScreen() {
             </View>
           </View>
         </SafeAreaView>
-      </LinearGradient>
+      </View>
 
       <ScrollView
         style={styles.content}
@@ -147,12 +145,12 @@ export default function HomeScreen() {
                   <Text style={styles.metaStatus}>{meta.status}</Text>
                 </View>
                 <ProgressBar
-                  progress={(calcularDiasSemRecaida(meta) / meta.objetivo_numerico) * 100}
+                  progress={meta.objetivo_numerico && meta.objetivo_numerico > 0 ? (calcularDiasSemRecaida(meta) / meta.objetivo_numerico) * 100 : 0}
                   showPercentage={false}
                   color={Colors.primary.light}
                 />
                 <Text style={styles.metaProgress}>
-                  {calcularDiasSemRecaida(meta)} de {meta.objetivo_numerico} {meta.unidade}
+                  {calcularDiasSemRecaida(meta)} de {meta.objetivo_numerico ?? 0} {meta.unidade}
                 </Text>
               </Card>
             ))

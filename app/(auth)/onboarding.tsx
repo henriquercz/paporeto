@@ -252,7 +252,7 @@ export default function OnboardingScreen() {
 
         <View style={styles.footer}>
           <Button
-            title={getButtonText()}
+            label={getButtonText()}
             onPress={handleNext}
             disabled={loading}
             variant="primary"

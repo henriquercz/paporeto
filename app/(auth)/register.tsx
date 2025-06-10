@@ -157,7 +157,7 @@ export default function RegisterScreen() {
             </View>
 
             <Button
-              title={loading ? "CRIANDO CONTA..." : "AVANÇAR"}
+              label={loading ? "CRIANDO CONTA..." : "AVANÇAR"}
               onPress={handleRegister}
               disabled={loading}
               variant="primary"

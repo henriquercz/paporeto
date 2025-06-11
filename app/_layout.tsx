@@ -51,21 +51,20 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (sessionLoading || !(fontsLoaded || fontError)) return; // Não fazer nada se a sessão ou fontes ainda estiverem carregando
+    if (sessionLoading || !(fontsLoaded || fontError)) return;
 
     const inAuthGroup = segments[0] === '(auth)';
 
-    if (session && !inAuthGroup) {
-      if (segments[0] !== '(tabs)' && segments.length > 0) {
+    if (session) {
+      // Usuário está logado. Se ele estiver no grupo de autenticação, redirecione para as abas.
+      if (inAuthGroup) {
         router.replace('/(tabs)');
       }
-    } else if (!session && !inAuthGroup) {
-       if (segments.length > 0) {
-          router.replace('/(auth)/welcome');
-       }
-    } else if (!session && segments[0] === '(tabs)'){
-      // Caso em que o usuário está em (tabs) mas a sessão expirou ou fez logout
-      router.replace('/(auth)/welcome');
+    } else {
+      // Usuário não está logado. Se ele não estiver no grupo de autenticação, redirecione para lá.
+      if (!inAuthGroup) {
+        router.replace('/(auth)/welcome');
+      }
     }
   }, [session, sessionLoading, segments, fontsLoaded, fontError]);
 
@@ -79,6 +78,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="meta" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="dark" backgroundColor="#1B3347" />

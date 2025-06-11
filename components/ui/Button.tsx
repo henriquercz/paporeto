@@ -5,7 +5,7 @@ import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
 interface ButtonProps {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline';
+    variant?: 'primary' | 'secondary' | 'outline' | 'destructive';
   size?: 'small' | 'medium' | 'large';
   disabled?: boolean;
   isLoading?: boolean;
@@ -35,9 +35,9 @@ export const Button: React.FC<ButtonProps> = ({
     style,
   ];
 
-  const textStyleCombined = [
+    const textStyleCombined = [
     styles.baseText,
-    styles[`${variant}Text`],
+    styles[`${variant}Text` as 'primaryText' | 'secondaryText' | 'outlineText' | 'destructiveText'],
     textStyle,
   ];
 
@@ -85,6 +85,10 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: Colors.primary.dark,
   },
+
+  destructive: {
+    backgroundColor: Colors.error,
+  },
   
   // Sizes
   small: {
@@ -121,6 +125,9 @@ const styles = StyleSheet.create({
   },
   outlineText: {
     color: Colors.primary.dark,
+  },
+  destructiveText: {
+    color: Colors.neutral.white,
   },
   contentContainer: {
     flexDirection: 'row',

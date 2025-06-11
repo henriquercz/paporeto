@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/database';
 import { GeminiService } from '@/lib/gemini';
-import { format } from 'date-fns';
+import { format, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import * as ImagePicker from 'expo-image-picker';
 import { Audio } from 'expo-av';
@@ -162,6 +162,35 @@ export default function DiarioScreen() {
         }
       }
 
+      // Lógica de Pontuação
+      const hojeInicio = startOfDay(new Date()).toISOString();
+      const hojeFim = endOfDay(new Date()).toISOString();
+
+      const { data: pontoExistente, error: erroPonto } = await supabase
+        .from('pontos')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('motivo', 'diario_completo')
+        .gte('data', hojeInicio)
+        .lte('data', hojeFim)
+        .limit(1);
+
+      if (erroPonto) {
+        console.error('Erro ao verificar ponto existente:', erroPonto);
+      }
+
+      if (!pontoExistente || pontoExistente.length === 0) {
+                  const { error: erroInsercaoPonto } = await supabase
+            .from('pontos')
+            .insert({ user_id: user.id, quantidade: 1, motivo: 'diario_completo' });
+        
+        if (erroInsercaoPonto) {
+          console.error('Erro ao inserir ponto:', erroInsercaoPonto);
+        } else {
+          console.log('Ponto por diário completo adicionado!');
+        }
+      }
+
       // 4. Limpar e atualizar
       setNewEntryText('');
       setAnexosParaSalvar([]);
@@ -295,9 +324,6 @@ export default function DiarioScreen() {
     <View style={styles.container}>
       <SafeAreaView style={styles.header}>
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => router.back()} style={{ padding: Spacing.sm }}>
-            <ArrowLeft size={24} color={Colors.neutral.white} />
-          </TouchableOpacity>
           <Text style={styles.title}>Meu Diário</Text>
           <View style={styles.dayBadge}>
             <Text style={styles.dayText}>{dayStreak} {dayStreak === 1 ? 'dia' : 'dias'} de foco</Text>
@@ -377,7 +403,7 @@ export default function DiarioScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.appBackground },
   header: { backgroundColor: Colors.primary.dark, paddingBottom: Spacing.md },
-  headerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm },
+  headerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm, marginBottom: Spacing.md },
   title: { fontWeight: Fonts.weights.bold, fontSize: Fonts.sizes.title, color: Colors.neutral.white },
   dayBadge: { backgroundColor: Colors.primary.accent, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderRadius: BorderRadius.lg },
   dayText: { fontWeight: Fonts.weights.bold, fontSize: Fonts.sizes.small, color: Colors.neutral.white },

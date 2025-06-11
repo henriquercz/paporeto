@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '@/lib/database.types'; // Para referência futura de tipos de tabela
 import { GeminiService } from '@/lib/gemini';
-import { format } from 'date-fns';
+import { format, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 const blobAvatar = require('@/assets/images/blob.png');
 
@@ -35,12 +35,17 @@ export default function ChatbotScreen() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('chatbot_conversas')
-        .select('*')
+        .select('id, entrada_usuario, resposta_bot, timestamp')
         .eq('user_id', user.id)
         .order('timestamp', { ascending: true })
         .limit(20); // Últimas 20 conversas
+
+      if (error) {
+        console.error('Erro ao carregar histórico:', error);
+        return;
+      }
 
       if (data) {
         const mensagensHistorico: Mensagem[] = [];
@@ -128,8 +133,36 @@ export default function ChatbotScreen() {
             resposta_bot: respostaBot,
             timestamp: new Date().toISOString(),
           });
-      }
 
+        // Lógica de Pontuação
+        const hojeInicio = startOfDay(new Date()).toISOString();
+        const hojeFim = endOfDay(new Date()).toISOString();
+
+        const { data: pontoExistente, error: erroPonto } = await supabase
+          .from('pontos')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('motivo', 'chatbot_conversa')
+          .gte('data', hojeInicio)
+          .lte('data', hojeFim)
+          .limit(1);
+
+        if (erroPonto) {
+          console.error('Erro ao verificar ponto existente (chatbot):', erroPonto);
+        }
+
+        if (!pontoExistente || pontoExistente.length === 0) {
+          const { error: erroInsercaoPonto } = await supabase
+            .from('pontos')
+            .insert({ user_id: user.id, quantidade: 1, motivo: 'chatbot_conversa' });
+          
+          if (erroInsercaoPonto) {
+            console.error('Erro ao inserir ponto (chatbot):', erroInsercaoPonto);
+          } else {
+            console.log('Ponto por conversa com o chatbot adicionado!');
+          }
+        }
+      }
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error);
       

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { type Database } from '@/lib/database.types';
+import { BrainCircuit, MessageSquare, BookOpen } from 'lucide-react-native';
 import { Calendar, Award, Target, Plus, AlertCircle } from 'lucide-react-native';
 import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
 import { Card } from '@/components/ui/Card';
@@ -9,22 +11,29 @@ import { ProgressBar } from '@/components/ui/ProgressBar';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '../../lib/database.types';
-import { format, differenceInDays } from 'date-fns';
+import { format, differenceInDays, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+type User = Database['public']['Tables']['users']['Row'];
+type Meta = Database['public']['Tables']['metas']['Row'];
+type Ponto = Database['public']['Tables']['pontos']['Row'];
+
 export default function HomeScreen() {
-  const [user, setUser] = useState<Tables<'users'> | null>(null);
-  const [metas, setMetas] = useState<Tables<'metas'>[]>([]);
-  const [pontos, setPontos] = useState<Tables<'pontos'>[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [metas, setMetas] = useState<Meta[]>([]);
+  const [pontos, setPontos] = useState<Ponto[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lembretes, setLembretes] = useState<any[]>([]); // Estado para futuros lembretes
 
-  useEffect(() => {
-    loadUserData();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadUserData();
+    }, [])
+  );
 
   const loadUserData = async () => {
+    setLoading(true);
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) return;
@@ -57,6 +66,37 @@ export default function HomeScreen() {
 
       if (pontosData) setPontos(pontosData);
 
+      // Lógica para Lembretes de Hoje
+      const hojeInicio = startOfDay(new Date()).toISOString();
+      const hojeFim = endOfDay(new Date()).toISOString();
+
+      const tarefas = [
+        { id: 'diario', table: 'diario_entradas', dateField: 'data_criacao', title: 'Registro no Diário', description: 'Anote seus pensamentos e sentimentos.', icon: BookOpen, route: '/(tabs)/diario' },
+        { id: 'comunidade', table: 'posts', dateField: 'created_at', title: 'Post na Comunidade', description: 'Compartilhe sua jornada com outros.', icon: MessageSquare, route: '/(tabs)/comunidade' },
+        { id: 'chatbot', table: 'chatbot_conversas', dateField: 'timestamp', title: 'Conversa com o Blob', description: 'Converse com seu assistente emocional.', icon: BrainCircuit, route: '/(tabs)/chatbot' },
+      ];
+
+      const lembretesPendentes = [];
+
+      for (const tarefa of tarefas) {
+        const { data, error } = await supabase
+          .from(tarefa.table as any)
+          .select('id')
+          .eq('user_id', authUser.id)
+          .gte(tarefa.dateField, hojeInicio)
+          .lte(tarefa.dateField, hojeFim)
+          .limit(1);
+
+        if (error) {
+          console.error(`Erro ao verificar ${tarefa.id}:`, error);
+        }
+
+        if (!data || data.length === 0) {
+          lembretesPendentes.push(tarefa);
+        }
+      }
+      setLembretes(lembretesPendentes);
+
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {
@@ -65,17 +105,17 @@ export default function HomeScreen() {
     }
   };
 
-  const onRefresh = () => {
+  const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     loadUserData();
-  };
+  }, []);
 
-  const calcularDiasSemRecaida = (meta: Tables<'metas'>) => {
+  const totalPontos = pontos.reduce((acc, ponto) => acc + (ponto.quantidade || 0), 0);
+
+  const calcularDiasSemRecaida = (meta: Meta) => {
     const diasDecorridos = differenceInDays(new Date(), new Date(meta.data_inicio));
     return Math.max(0, diasDecorridos);
   };
-
-  const totalPontos = pontos.reduce((sum, p) => sum + p.quantidade, 0);
 
   return (
     <View style={styles.container}>
@@ -159,17 +199,27 @@ export default function HomeScreen() {
 
         {/* Lembretes do Dia */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Lembretes de Hoje</Text>
-          
-          <Card style={styles.reminderCard}>
-            <Text style={styles.reminderText}>📝 Registrar no diário</Text>
-            <Text style={styles.reminderTime}>Pendente</Text>
-          </Card>
-          
-          <Card style={styles.reminderCard}>
-            <Text style={styles.reminderText}>💧 Beber 2L de água</Text>
-            <Text style={styles.reminderTime}>Em andamento</Text>
-          </Card>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Lembretes de Hoje</Text>
+          </View>
+          {lembretes.length > 0 ? (
+            lembretes.map((lembrete) => (
+              <TouchableOpacity key={lembrete.id} onPress={() => router.push(lembrete.route as any)}>
+                <Card style={styles.reminderCard}>
+                  <lembrete.icon size={24} color={Colors.primary.dark} />
+                  <View style={styles.reminderContent}>
+                    <Text style={styles.reminderTitle}>{lembrete.title}</Text>
+                    <Text style={styles.reminderDescription}>{lembrete.description}</Text>
+                  </View>
+                </Card>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Card style={styles.emptyCard}>
+              <Text style={styles.emptyText}>Você completou todas as suas tarefas diárias!</Text>
+              <Text style={styles.emptySubtext}>Bom trabalho! ✨</Text>
+            </Card>
+          )}
         </View>
 
         {/* Últimas Conquistas */}
@@ -343,9 +393,22 @@ const styles = StyleSheet.create({
   },
   reminderCard: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: Spacing.md,
+    gap: Spacing.md,
+  },
+  reminderContent: {
+    flex: 1,
+  },
+  reminderTitle: {
+    fontSize: Fonts.sizes.body,
+    fontWeight: Fonts.weights.bold,
+    color: Colors.primary.dark,
+  },
+  reminderDescription: {
+    fontSize: Fonts.sizes.small,
+    color: Colors.neutral.gray400,
+    marginTop: 2,
   },
   reminderText: {
     fontSize: Fonts.sizes.body,

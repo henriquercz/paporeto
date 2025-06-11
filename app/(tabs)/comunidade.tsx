@@ -5,7 +5,7 @@ import { Users, MessageCircle, Heart, Plus, Calendar, AlertCircle } from 'lucide
 import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
 import { Card } from '@/components/ui/Card';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/lib/supabase'; // Importar supabase client
 import { Database } from '@/lib/database.types'; // Importar tipos gerados
@@ -105,9 +105,44 @@ export default function ComunidadeScreen() {
     setIsCriarTopicoModalVisible(false);
   };
 
-  const handleTopicCreated = (postType: any) => { // postType pode ser usado futuramente se necessário
-    fetchTopicos(); 
-    handleCloseCriarTopicoModal();
+  const handleTopicCreated = async (postType: any) => {
+    fetchTopicos(); // Atualiza a lista de tópicos
+    setIsCriarTopicoModalVisible(false); // Fecha o modal
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const hojeInicio = startOfDay(new Date()).toISOString();
+      const hojeFim = endOfDay(new Date()).toISOString();
+
+      const { data: pontoExistente, error: erroPonto } = await supabase
+        .from('pontos')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('motivo', 'comunidade_post')
+        .gte('data', hojeInicio)
+        .lte('data', hojeFim)
+        .limit(1);
+
+      if (erroPonto) {
+        console.error('Erro ao verificar ponto existente (comunidade):', erroPonto);
+      }
+
+      if (!pontoExistente || pontoExistente.length === 0) {
+        const { error: erroInsercaoPonto } = await supabase
+          .from('pontos')
+          .insert({ user_id: user.id, quantidade: 1, motivo: 'comunidade_post' });
+        
+        if (erroInsercaoPonto) {
+          console.error('Erro ao inserir ponto (comunidade):', erroInsercaoPonto);
+        } else {
+          console.log('Ponto por post na comunidade adicionado!');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao processar pontuação por post na comunidade:', error);
+    }
   };
 
   const handleOpenMarcarEncontroModal = () => {

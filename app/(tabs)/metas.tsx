@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background },
   header: { paddingBottom: Spacing.lg },
-  headerContent: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingHorizontal: Spacing.lg, paddingTop: Spacing.md },
+  headerContent: { flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', paddingHorizontal: Spacing.lg, paddingTop: Spacing.md },
   title: { fontSize: Fonts.sizes.title, fontWeight: Fonts.weights.bold, color: Colors.neutral.white },
   content: { flex: 1, backgroundColor: Colors.neutral.gray100, paddingHorizontal: Spacing.lg, marginTop: -Spacing.md },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: Spacing.xxl },

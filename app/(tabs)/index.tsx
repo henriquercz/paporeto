@@ -71,8 +71,8 @@ export default function HomeScreen() {
       const hojeFim = endOfDay(new Date()).toISOString();
 
       const tarefas = [
-        { id: 'diario', table: 'diario_entradas', dateField: 'data_criacao', title: 'Registro no Diário', description: 'Anote seus pensamentos e sentimentos.', icon: BookOpen, route: '/(tabs)/diario' },
-        { id: 'comunidade', table: 'posts', dateField: 'created_at', title: 'Post na Comunidade', description: 'Compartilhe sua jornada com outros.', icon: MessageSquare, route: '/(tabs)/comunidade' },
+        { id: 'diario', table: 'diarios', dateField: 'data_registro', title: 'Registro no Diário', description: 'Anote seus pensamentos e sentimentos.', icon: BookOpen, route: '/(tabs)/diario' },
+        { id: 'comunidade', table: 'chats_forum', dateField: 'created_at', title: 'Post na Comunidade', description: 'Compartilhe sua jornada com outros.', icon: MessageSquare, route: '/(tabs)/comunidade' },
         { id: 'chatbot', table: 'chatbot_conversas', dateField: 'timestamp', title: 'Conversa com o Blob', description: 'Converse com seu assistente emocional.', icon: BrainCircuit, route: '/(tabs)/chatbot' },
       ];
 
@@ -115,6 +115,22 @@ export default function HomeScreen() {
   const calcularDiasSemRecaida = (meta: Meta) => {
     const diasDecorridos = differenceInDays(new Date(), new Date(meta.data_inicio));
     return Math.max(0, diasDecorridos);
+  };
+
+  const formatarMotivo = (motivo: string | null) => {
+    if (!motivo) return '';
+    switch (motivo) {
+      case 'diario_completo':
+        return 'Tarefa: Registro no Diário';
+      case 'comunidade_post':
+        return 'Tarefa: Post na Comunidade';
+      case 'chatbot_conversa':
+        return 'Tarefa: Conversa com o Blob';
+      case 'meta_concluida':
+        return 'Conquista: Meta Concluída!';
+      default:
+        return motivo.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
   };
 
   return (
@@ -230,12 +246,14 @@ export default function HomeScreen() {
               <Card key={ponto.id} style={styles.achievementCard}>
                 <Award size={16} color={Colors.primary.accent} strokeWidth={2} />
                 <View style={styles.achievementContent}>
-                  <Text style={styles.achievementText}>{ponto.motivo}</Text>
-                  <Text style={styles.achievementDate}>
-                    {format(new Date(ponto.data), 'dd/MM/yyyy', { locale: ptBR })}
-                  </Text>
+                  <Text style={styles.achievementText}>{formatarMotivo(ponto.motivo)}</Text>
+                  {ponto.data && (
+                    <Text style={styles.achievementDate}>
+                      {format(new Date(ponto.data), 'dd/MM/yyyy', { locale: ptBR })}
+                    </Text>
+                  )}
                 </View>
-                <Text style={styles.achievementPoints}>+{ponto.quantidade}</Text>
+                <Text style={styles.achievementPoints}>+{ponto.quantidade || 0}</Text>
               </Card>
             ))}
           </View>
@@ -425,6 +443,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.md,
     gap: Spacing.md,
+    marginTop: Spacing.md,
   },
   achievementContent: {
     flex: 1,

@@ -1,15 +1,16 @@
 /**
  * @file MarcarEncontroModal.tsx
- * @description Modal para marcar encontros da comunidade.
+ * @description Modal para marcar encontros da comunidade com seletor de data/hora nativo.
  * @autor Cascade
- * @date 2025-06-07
- * @version 1.0
+ * @date 2025-06-10
+ * @version 1.2
  */
 
 import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   Modal,
   TouchableOpacity,
@@ -20,24 +21,24 @@ import {
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
-import { X } from 'lucide-react-native';
-import { Database } from '@/lib/database.types';
-
-// TODO: Definir os campos específicos para marcar encontro e o tipo de inserção correspondente
-// Exemplo: type EncontroInsert = Database['public']['Tables']['encontros']['Insert'];
+import { X, Calendar, Clock } from 'lucide-react-native';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 interface MarcarEncontroModalProps {
   isVisible: boolean;
   onClose: () => void;
-  // onEncontroMarcado: () => void; // Callback para quando um encontro for criado com sucesso
+  onEncontroMarcado: () => void;
 }
 
-const MarcarEncontroModal: React.FC<MarcarEncontroModalProps> = ({ isVisible, onClose }) => {
+const MarcarEncontroModal: React.FC<MarcarEncontroModalProps> = ({ isVisible, onClose, onEncontroMarcado }) => {
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // TODO: Adicionar estados para os campos do formulário (localização, data, tipoVicio, etc.)
-  // Ex: const [localizacao, setLocalizacao] = useState('');
+  const [titulo, setTitulo] = useState('');
+  const [local, setLocal] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -48,7 +49,11 @@ const MarcarEncontroModal: React.FC<MarcarEncontroModalProps> = ({ isVisible, on
     };
     if (isVisible) {
       fetchUser();
-      // TODO: Resetar campos do formulário ao abrir
+      // Reset state on open
+      setTitulo('');
+      setLocal('');
+      setDate(new Date());
+      setLoading(false);
     }
   }, [isVisible]);
 
@@ -57,14 +62,57 @@ const MarcarEncontroModal: React.FC<MarcarEncontroModalProps> = ({ isVisible, on
       Alert.alert('Erro', 'Usuário não autenticado. Por favor, tente novamente.');
       return;
     }
-    // TODO: Adicionar validações para os campos do formulário
+    if (!titulo.trim() || !local.trim()) {
+      Alert.alert('Campos Obrigatórios', 'Por favor, preencha o título e o local do encontro.');
+      return;
+    }
 
     setLoading(true);
-    Alert.alert('Em Desenvolvimento', 'Funcionalidade de marcar encontro ainda em desenvolvimento.');
-    // TODO: Implementar a lógica de inserção na tabela de encontros do Supabase
-    // Ex: const { error } = await supabase.from('encontros').insert({ ... });
-    setLoading(false);
-    // onClose(); // Fechar modal após sucesso ou se desejado
+
+    try {
+      const { error } = await supabase.from('chats_forum').insert({
+        topic: titulo.trim(),
+        content: `Encontro da comunidade em ${local.trim()}. Data: ${date.toLocaleDateString('pt-BR')} às ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`,
+        user_id: userId,
+        post_type: 'encontro',
+        local_encontro: local.trim(),
+        data_encontro: date.toISOString(),
+        upvotes: 0,
+        is_deleted: false,
+      });
+
+      if (error) throw error;
+
+      Alert.alert('Sucesso!', 'Encontro marcado e publicado na comunidade.');
+      onEncontroMarcado();
+      onClose();
+    } catch (error: any) {
+      console.error('Erro ao marcar encontro:', error);
+      Alert.alert('Erro', `Não foi possível marcar o encontro: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (selectedDate) {
+        const newDate = new Date(date);
+        newDate.setFullYear(selectedDate.getFullYear());
+        newDate.setMonth(selectedDate.getMonth());
+        newDate.setDate(selectedDate.getDate());
+        setDate(newDate);
+    }
+  };
+
+  const onTimeChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowTimePicker(Platform.OS === 'ios');
+    if (selectedDate) {
+        const newDate = new Date(date);
+        newDate.setHours(selectedDate.getHours());
+        newDate.setMinutes(selectedDate.getMinutes());
+        setDate(newDate);
+    }
   };
 
   return (
@@ -88,15 +136,63 @@ const MarcarEncontroModal: React.FC<MarcarEncontroModalProps> = ({ isVisible, on
             </View>
 
             <View style={styles.formContainer}>
-              <Text style={styles.placeholderText}>
-                Formulário para marcar encontro (localização, data, tipo de dependentes, etc.) será implementado aqui.
-              </Text>
-              {/* TODO: Adicionar Inputs para os campos do encontro */}
+              <Text style={styles.label}>Título do Encontro</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ex: Roda de conversa no parque"
+                placeholderTextColor={Colors.neutral.gray400}
+                value={titulo}
+                onChangeText={setTitulo}
+              />
+              <Text style={styles.label}>Local</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Endereço ou ponto de referência"
+                placeholderTextColor={Colors.neutral.gray400}
+                value={local}
+                onChangeText={setLocal}
+              />
+              <View style={styles.datePickerContainer}>
+                <View style={styles.datePickerInput}>
+                  <Text style={styles.label}>Data</Text>
+                  <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.datePickerButton}>
+                    <Calendar size={18} color={Colors.neutral.gray400} />
+                    <Text style={styles.datePickerText}>{date.toLocaleDateString('pt-BR')}</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.datePickerInput}>
+                  <Text style={styles.label}>Horário</Text>
+                  <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.datePickerButton}>
+                    <Clock size={18} color={Colors.neutral.gray400} />
+                    <Text style={styles.datePickerText}>{date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              {showDatePicker && (
+                <DateTimePicker
+                  testID="datePicker"
+                  value={date}
+                  mode="date"
+                  display="default"
+                  onChange={onDateChange}
+                  locale="pt-BR"
+                />
+              )}
+              {showTimePicker && (
+                <DateTimePicker
+                  testID="timePicker"
+                  value={date}
+                  mode="time"
+                  display="default"
+                  is24Hour={true}
+                  onChange={onTimeChange}
+                />
+              )}
             </View>
 
-            <Button 
-              title={loading ? 'Marcando...' : 'Marcar Encontro'}
-              onPress={handleMarcarEncontro} 
+            <Button
+              label={loading ? 'Marcando...' : 'Confirmar Encontro'}
+              onPress={handleMarcarEncontro}
               disabled={loading}
               variant='primary'
               style={styles.submitButton}
@@ -108,36 +204,41 @@ const MarcarEncontroModal: React.FC<MarcarEncontroModalProps> = ({ isVisible, on
   );
 };
 
+export default MarcarEncontroModal;
+
 const styles = StyleSheet.create({
   keyboardAvoidingView: {
     flex: 1,
+    justifyContent: 'flex-end',
   },
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalView: {
-    width: '90%',
+    width: '100%',
     backgroundColor: Colors.neutral.white,
-    borderRadius: BorderRadius.lg,
+    borderTopLeftRadius: BorderRadius.lg,
+    borderTopRightRadius: BorderRadius.lg,
     padding: Spacing.lg,
-    alignItems: 'stretch',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: -2,
     },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
   },
   header: {
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   modalTitle: {
     fontSize: Fonts.sizes.title,
@@ -148,19 +249,54 @@ const styles = StyleSheet.create({
     padding: Spacing.xs,
   },
   formContainer: {
+    width: '100%',
     marginBottom: Spacing.md,
-    paddingVertical: Spacing.xl,
-    alignItems: 'center',
   },
-  placeholderText: {
+  label: {
     fontSize: Fonts.sizes.body,
-    color: Colors.neutral.gray400, // Corrigido de gray500 para gray400
-    textAlign: 'center',
-    lineHeight: Fonts.sizes.body * 1.5,
+    fontWeight: Fonts.weights.medium,
+    color: Colors.neutral.gray800,
+    marginBottom: Spacing.sm,
+  },
+  input: {
+    width: '100%',
+    backgroundColor: Colors.neutral.gray100,
+    borderWidth: 1,
+    borderColor: Colors.neutral.gray100,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    fontSize: Fonts.sizes.body,
+    color: Colors.primary.dark,
+    marginBottom: Spacing.md,
+  },
+  datePickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  datePickerInput: {
+    flex: 1,
+  },
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.neutral.white,
+    borderWidth: 1,
+    borderColor: Colors.neutral.gray100,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 12, // Ajuste para alinhar altura com TextInput
+    gap: Spacing.sm
+  },
+  datePickerText: {
+    fontSize: Fonts.sizes.body,
+    color: Colors.neutral.gray800,
   },
   submitButton: {
     marginTop: Spacing.md,
+    width: '100%',
   },
 });
-
-export default MarcarEncontroModal;

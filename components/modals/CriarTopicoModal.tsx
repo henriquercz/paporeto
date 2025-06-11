@@ -187,7 +187,7 @@ const CriarTopicoModal: React.FC<CriarTopicoModalProps> = ({ isVisible, onClose,
             )}
 
             <Button 
-              title={loading ? 'Enviando...' : (postType === 'encontro' ? 'Próximo' : 'Publicar')}
+              label={loading ? 'Enviando...' : (postType === 'encontro' ? 'Próximo' : 'Publicar')}
               onPress={handleCriarTopico} 
               disabled={loading}
               variant='primary'

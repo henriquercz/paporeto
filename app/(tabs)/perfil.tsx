@@ -7,15 +7,33 @@ import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
-import { Tables } from '../../lib/database.types';
+import { type Database } from '@/lib/database.types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import * as ImagePicker from 'expo-image-picker';
 
+type User = Database['public']['Tables']['users']['Row'];
+type Ponto = Database['public']['Tables']['pontos']['Row'];
+
+const formatarMotivo = (motivo: string | null) => {
+  if (!motivo) return '';
+  switch (motivo) {
+    case 'diario_completo':
+      return 'Tarefa: Registro no Diário';
+    case 'comunidade_post':
+      return 'Tarefa: Post na Comunidade';
+    case 'chatbot_conversa':
+      return 'Tarefa: Conversa com o Blob';
+    case 'meta_concluida':
+      return 'Conquista: Meta Concluída!';
+    default:
+      return motivo.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+};
 
 export default function PerfilScreen() {
-  const [user, setUser] = useState<Tables<'users'> | null>(null);
-  const [pontos, setPontos] = useState<Tables<'pontos'>[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [pontos, setPontos] = useState<Ponto[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
 
@@ -202,9 +220,6 @@ export default function PerfilScreen() {
       <View style={styles.container}>
         <View style={[styles.header, { backgroundColor: Colors.primary.dark }]}>
           <View style={styles.headerContent}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <ArrowLeft size={24} color={Colors.neutral.white} strokeWidth={2} />
-            </TouchableOpacity>
             <Text style={styles.title}>Perfil</Text>
             <View style={{ width: 24 }} />
           </View>
@@ -359,9 +374,9 @@ export default function PerfilScreen() {
               <Card key={ponto.id} style={styles.achievementCard}>
                 <Award size={16} color={Colors.primary.accent} strokeWidth={2} />
                 <View style={styles.achievementContent}>
-                  <Text style={styles.achievementText}>{ponto.motivo}</Text>
+                  <Text style={styles.achievementText}>{formatarMotivo(ponto.motivo)}</Text>
                   <Text style={styles.achievementDate}>
-                    {format(new Date(ponto.data), 'dd/MM/yyyy', { locale: ptBR })}
+                    {ponto.data ? format(new Date(ponto.data), 'dd/MM/yyyy', { locale: ptBR }) : ''}
                   </Text>
                 </View>
                 <Text style={styles.achievementPoints}>+{ponto.quantidade}</Text>

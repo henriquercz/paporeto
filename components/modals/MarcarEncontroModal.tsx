@@ -1,9 +1,9 @@
 /**
  * @file MarcarEncontroModal.tsx
- * @description Modal para marcar encontros da comunidade com seletor de data/hora nativo.
+ * @description Modal para marcar encontros da comunidade com seletor de data/hora aprimorado para iOS.
  * @autor Cascade
- * @date 2025-06-10
- * @version 1.2
+ * @date 2025-06-11
+ * @version 1.3
  */
 
 import React, { useState, useEffect } from 'react';
@@ -37,8 +37,10 @@ const MarcarEncontroModal: React.FC<MarcarEncontroModalProps> = ({ isVisible, on
   const [titulo, setTitulo] = useState('');
   const [local, setLocal] = useState('');
   const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  // Picker state
+  const [tempDate, setTempDate] = useState(new Date());
+  const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date');
+  const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -71,12 +73,12 @@ const MarcarEncontroModal: React.FC<MarcarEncontroModalProps> = ({ isVisible, on
 
     try {
       const { error } = await supabase.from('chats_forum').insert({
-        topic: titulo.trim(),
-        content: `Encontro da comunidade em ${local.trim()}. Data: ${date.toLocaleDateString('pt-BR')} às ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`,
+        titulo: titulo.trim(),
+        conteudo: `Encontro da comunidade em ${local.trim()}.`,
         user_id: userId,
         post_type: 'encontro',
-        local_encontro: local.trim(),
-        data_encontro: date.toISOString(),
+        encontro_local: local.trim(),
+        encontro_data_hora: date.toISOString(),
         upvotes: 0,
         is_deleted: false,
       });
@@ -94,25 +96,28 @@ const MarcarEncontroModal: React.FC<MarcarEncontroModalProps> = ({ isVisible, on
     }
   };
 
-  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios');
-    if (selectedDate) {
-        const newDate = new Date(date);
-        newDate.setFullYear(selectedDate.getFullYear());
-        newDate.setMonth(selectedDate.getMonth());
-        newDate.setDate(selectedDate.getDate());
-        setDate(newDate);
+  const handlePickerChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    const currentDate = selectedDate || tempDate;
+    setTempDate(currentDate);
+  };
+
+  const showPickerModal = () => {
+    setTempDate(date);
+    setPickerMode('date');
+    setShowPicker(true);
+  };
+
+  const handlePickerConfirm = () => {
+    if (pickerMode === 'date') {
+      setPickerMode('time');
+    } else {
+      setDate(tempDate);
+      setShowPicker(false);
     }
   };
 
-  const onTimeChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowTimePicker(Platform.OS === 'ios');
-    if (selectedDate) {
-        const newDate = new Date(date);
-        newDate.setHours(selectedDate.getHours());
-        newDate.setMinutes(selectedDate.getMinutes());
-        setDate(newDate);
-    }
+  const handlePickerCancel = () => {
+    setShowPicker(false);
   };
 
   return (
@@ -152,41 +157,38 @@ const MarcarEncontroModal: React.FC<MarcarEncontroModalProps> = ({ isVisible, on
                 value={local}
                 onChangeText={setLocal}
               />
-              <View style={styles.datePickerContainer}>
-                <View style={styles.datePickerInput}>
-                  <Text style={styles.label}>Data</Text>
-                  <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.datePickerButton}>
-                    <Calendar size={18} color={Colors.neutral.gray400} />
-                    <Text style={styles.datePickerText}>{date.toLocaleDateString('pt-BR')}</Text>
-                  </TouchableOpacity>
+              <Text style={styles.label}>Data e Horário</Text>
+              <TouchableOpacity onPress={showPickerModal} style={styles.datePickerButton}>
+                <Calendar size={18} color={Colors.neutral.gray400} />
+                <Text style={styles.datePickerText}>
+                  {`${date.toLocaleDateString('pt-BR')} às ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Picker Modal Overlay */}
+              {showPicker && (
+                <View style={styles.pickerOverlay}>
+                  <View style={styles.pickerContainer}>
+                    <View style={styles.pickerHeader}>
+                      <TouchableOpacity onPress={handlePickerCancel}>
+                        <Text style={styles.pickerButtonText}>Cancelar</Text>
+                      </TouchableOpacity>
+                      <Text style={styles.pickerTitle}>{pickerMode === 'date' ? 'Selecione a Data' : 'Selecione a Hora'}</Text>
+                      <TouchableOpacity onPress={handlePickerConfirm}>
+                        <Text style={styles.pickerButtonText_confirm}>{pickerMode === 'date' ? 'Próximo' : 'Confirmar'}</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      testID="dateTimePicker"
+                      value={tempDate}
+                      mode={pickerMode}
+                      display="spinner"
+                      onChange={handlePickerChange}
+                      locale="pt-BR"
+                      is24Hour={true}
+                    />
+                  </View>
                 </View>
-                <View style={styles.datePickerInput}>
-                  <Text style={styles.label}>Horário</Text>
-                  <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.datePickerButton}>
-                    <Clock size={18} color={Colors.neutral.gray400} />
-                    <Text style={styles.datePickerText}>{date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-              {showDatePicker && (
-                <DateTimePicker
-                  testID="datePicker"
-                  value={date}
-                  mode="date"
-                  display="default"
-                  onChange={onDateChange}
-                  locale="pt-BR"
-                />
-              )}
-              {showTimePicker && (
-                <DateTimePicker
-                  testID="timePicker"
-                  value={date}
-                  mode="time"
-                  display="default"
-                  is24Hour={true}
-                  onChange={onTimeChange}
-                />
               )}
             </View>
 
@@ -296,7 +298,43 @@ const styles = StyleSheet.create({
     color: Colors.neutral.gray800,
   },
   submitButton: {
-    marginTop: Spacing.md,
-    width: '100%',
+    marginTop: Spacing.lg,
+  },
+  pickerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  pickerContainer: {
+    backgroundColor: Colors.neutral.white,
+    borderTopLeftRadius: BorderRadius.lg,
+    borderTopRightRadius: BorderRadius.lg,
+    paddingBottom: Spacing.lg,
+  },
+  pickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.neutral.gray100,
+  },
+  pickerTitle: {
+    fontSize: Fonts.sizes.body,
+    fontWeight: Fonts.weights.bold,
+    color: Colors.neutral.gray800,
+  },
+  pickerButtonText: {
+    fontSize: Fonts.sizes.body,
+    color: Colors.primary.accent,
+  },
+  pickerButtonText_confirm: {
+    fontSize: Fonts.sizes.body,
+    color: Colors.primary.accent,
+    fontWeight: Fonts.weights.bold,
   },
 });

@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
 import CriarTopicoModal from '@/components/modals/CriarTopicoModal';
 import MarcarEncontroModal from '@/components/modals/MarcarEncontroModal';
+import EncontroCard from '@/components/cards/EncontroCard';
 
 const getInitials = (name: string | undefined | null): string => {
   if (!name || name.trim() === '') return '';
@@ -31,6 +32,7 @@ export default function ComunidadeScreen() {
   const [marcarEncontroModalVisible, setMarcarEncontroModalVisible] = useState(false);
   const [expandedPosts, setExpandedPosts] = useState<string[]>([]);
   const [filtro, setFiltro] = useState<'todos' | 'relato' | 'dica' | 'ajuda' | 'encontro'>('todos');
+  const [userId, setUserId] = useState<string | undefined>();
 
   const fetchTopicos = useCallback(async () => {
     if (!refreshing) setLoading(true);
@@ -65,6 +67,14 @@ export default function ComunidadeScreen() {
   useEffect(() => {
     fetchTopicos();
   }, [fetchTopicos]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUserId(user?.id);
+    };
+    fetchUser();
+  }, []);
 
   const topicosFiltrados = useMemo(() => {
     if (filtro === 'todos') {
@@ -137,6 +147,10 @@ export default function ComunidadeScreen() {
     );
   };
 
+  const handleParticipantesPress = (chatId: string) => {
+    Alert.alert('Funcionalidade em Desenvolvimento', `A lista de participantes para o encontro ${chatId} estará disponível em breve.`);
+  };
+
   const formatarTempo = (dataString: string | null) => {
     if (!dataString) return '';
     try {
@@ -197,38 +211,50 @@ export default function ComunidadeScreen() {
             </View>
           ) : null
         }
-        renderItem={({ item }) => (
-          <Card style={styles.topicCard}>
-            <View style={styles.topicHeader}>
-              <View style={styles.authorInfo}>
-                {item.users?.avatar_url ? (
-                  <Image source={{ uri: item.users.avatar_url }} style={styles.avatarImage} />
-                ) : (
-                  <View style={styles.avatarFallback}>
-                    <Text style={styles.avatarFallbackText}>{getInitials(item.users?.nome)}</Text>
+        renderItem={({ item }) => {
+          if (item.post_type === 'encontro') {
+            return (
+              <EncontroCard 
+                item={item}
+                userId={userId}
+                onParticipantesPress={handleParticipantesPress}
+              />
+            );
+          }
+
+          return (
+            <Card style={styles.topicCard}>
+              <View style={styles.topicHeader}>
+                <View style={styles.authorInfo}>
+                  {item.users?.avatar_url ? (
+                    <Image source={{ uri: item.users.avatar_url }} style={styles.avatarImage} />
+                  ) : (
+                    <View style={styles.avatarFallback}>
+                      <Text style={styles.avatarFallbackText}>{getInitials(item.users?.nome)}</Text>
+                    </View>
+                  )}
+                  <View style={styles.authorDetails}>
+                    <Text style={styles.authorName}>{item.users?.nome || 'Anônimo'}</Text>
+                    <Text style={styles.postTime}>{formatarTempo(item.created_at)}</Text>
                   </View>
-                )}
-                <View style={styles.authorDetails}>
-                  <Text style={styles.authorName}>{item.users?.nome || 'Anônimo'}</Text>
-                  <Text style={styles.postTime}>{formatarTempo(item.created_at)}</Text>
                 </View>
               </View>
-            </View>
-            <View style={styles.topicContent}>
-              <Text style={styles.topicTitle}>{item.topic || 'Sem título'}</Text>
-              <Text style={styles.postContent} numberOfLines={expandedPosts.includes(item.id) ? undefined : 3}>
-                {item.content}
-              </Text>
-              {(item.content?.length ?? 0) > 150 && (
-                <TouchableOpacity onPress={() => togglePostExpansion(item.id)} style={styles.readMoreButton}>
-                  <Text style={styles.readMoreText}>
-                    {expandedPosts.includes(item.id) ? 'Ler menos' : 'Ler mais'}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </Card>
-        )}
+              <View style={styles.topicContent}>
+                <Text style={styles.topicTitle}>{item.titulo}</Text>
+                <Text style={styles.postContent} numberOfLines={expandedPosts.includes(item.id) ? undefined : 3}>
+                  {item.conteudo}
+                </Text>
+                {(item.conteudo?.length ?? 0) > 150 && (
+                  <TouchableOpacity onPress={() => togglePostExpansion(item.id)} style={styles.readMoreButton}>
+                    <Text style={styles.readMoreText}>
+                      {expandedPosts.includes(item.id) ? 'Ler menos' : 'Ler mais'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </Card>
+          );
+        }}
         ListFooterComponent={<View style={styles.bottomSpacing} />}
       />
 

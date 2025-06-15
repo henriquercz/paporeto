@@ -15,7 +15,13 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#68B0D8"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.CAMERA"
+      ],
+      "package": "com.henrique_rcz.paporeto"
     },
     "web": {
       "bundler": "metro",
@@ -23,8 +29,8 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router", 
-      "expo-font", 
+      "expo-router",
+      "expo-font",
       "expo-web-browser",
       "expo-av",
       "expo-camera",
@@ -32,6 +38,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7d8c931c-7f46-4abd-81ba-9909884cb569"
+      }
     }
   }
 }

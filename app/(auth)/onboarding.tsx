@@ -137,7 +137,29 @@ export default function OnboardingScreen() {
       const typedRpcData = rpcData as RpcFinalizarOnboardingResponse | null;
 
       if (typedRpcData && typedRpcData.status === 'sucesso') {
-        Alert.alert('Onboarding Concluído!', 'Seu perfil e meta inicial foram configurados com sucesso. Bem-vindo(a) ao PapoReto!');
+        console.log('[OnboardingScreen] RPC finalizada. Atualizando status de onboarding do usuário...');
+
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({ onboarding_completed: true })
+            .eq('auth_user_id', user.id);
+
+          if (updateError) {
+            console.error('[OnboardingScreen] Erro ao atualizar o status de onboarding:', updateError);
+            Alert.alert(
+              'Erro Final',
+              'Não foi possível marcar seu onboarding como concluído. Você poderá ser solicitado a refazê-lo. Erro: ' + updateError.message
+            );
+          } else {
+            console.log('[OnboardingScreen] Status de onboarding atualizado. Navegando para a tela principal.');
+          }
+        }
+        
+        // Navega para as abas independentemente do erro de atualização do status,
+        // pois a meta principal foi criada com sucesso. A lógica no _layout lidará com o resto.
         router.replace('/(tabs)');
       } else {
         console.error('[OnboardingScreen] Erro retornado pela RPC:', typedRpcData?.message || 'Erro desconhecido da RPC');

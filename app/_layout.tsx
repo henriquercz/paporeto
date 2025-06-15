@@ -19,57 +19,87 @@ export default function RootLayout() {
   });
 
   // Auth state
-  const [sessionLoading, setSessionLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
   const segments = useSegments(); // Hook para obter os segmentos da rota atual
 
   useEffect(() => {
     // Esconder SplashScreen quando fontes e sessão estiverem carregadas
-    if ((fontsLoaded || fontError) && !sessionLoading) {
+    if ((fontsLoaded || fontError) && !loading && !profileLoading) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError, sessionLoading]);
+  }, [fontsLoaded, fontError, loading, profileLoading]);
 
   useEffect(() => {
     // Carregar sessão inicial
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
-      setSessionLoading(false);
+      setLoading(false);
     });
 
     // Escutar mudanças no estado de autenticação
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
-      if (sessionLoading && newSession !== null) {
-         setSessionLoading(false);
+      if (loading && newSession !== null) {
+         setLoading(false);
       }
     });
 
     return () => {
-      authListener?.subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, []);
 
   useEffect(() => {
-    if (sessionLoading || !(fontsLoaded || fontError)) return;
+    const handleNavigation = async () => {
+      if (loading) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
+      const inAuthGroup = (segments as string[]).includes("(auth)");
 
-    if (session) {
-      // Usuário está logado. Se ele estiver no grupo de autenticação, redirecione para as abas.
-      if (inAuthGroup) {
-        router.replace('/(tabs)');
+      if (session) {
+        setProfileLoading(true);
+        try {
+          const { data: profile, error } = await supabase
+            .from('users')
+            .select('onboarding_completed')
+            .eq('auth_user_id', session.user.id)
+            .single();
+
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching profile', error);
+          }
+
+          const onboardingCompleted = profile?.onboarding_completed ?? false;
+          const inOnboarding = (segments as string[]).includes('onboarding');
+
+          if (!onboardingCompleted) {
+            if (!inOnboarding) {
+              router.replace('/(auth)/onboarding');
+            }
+          } else {
+            if (inAuthGroup) {
+              router.replace('/(tabs)');
+            }
+          }
+        } catch (e) {
+          console.error('Navigation error:', e);
+        } finally {
+          setProfileLoading(false);
+        }
+      } else {
+        if (!inAuthGroup) {
+          router.replace('/(auth)/welcome');
+        }
+        setProfileLoading(false);
       }
-    } else {
-      // Usuário não está logado. Se ele não estiver no grupo de autenticação, redirecione para lá.
-      if (!inAuthGroup) {
-        router.replace('/(auth)/welcome');
-      }
-    }
-  }, [session, sessionLoading, segments, fontsLoaded, fontError]);
+    };
+
+    handleNavigation();
+  }, [session, loading, segments]);
 
   // Condição de carregamento para fontes e sessão
-  if (sessionLoading || (!fontsLoaded && !fontError)) {
+  if (loading || (!fontsLoaded && !fontError)) {
     return null; // Ou um componente de loading global
   }
 

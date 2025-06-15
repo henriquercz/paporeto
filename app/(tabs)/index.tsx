@@ -48,12 +48,14 @@ export default function HomeScreen() {
       if (userData) setUser(userData);
 
       // Carregar metas ativas
-      const { data: metasData } = await supabase
+      const { data: metasData, error: metasError } = await supabase
         .from('metas')
-        .select('*')
+        .select('id, user_id, titulo, descricao, tipo_vicio, data_inicio, data_fim_prevista, data_fim, status, objetivo_numerico, unidade, progresso, data_conclusao, gemini_content')
         .eq('user_id', authUser.id)
         .eq('status', 'ativa')
         .order('data_inicio', { ascending: false });
+
+      if (metasError) console.error('Erro ao carregar metas:', metasError);
 
       if (metasData) setMetas(metasData);
 
@@ -195,20 +197,19 @@ export default function HomeScreen() {
             </Card>
           ) : (
             metas.slice(0, 3).map((meta) => (
-              <Card key={meta.id} style={styles.metaCard}>
-                <View style={styles.metaHeader}>
-                  <Text style={styles.metaTitle}>{meta.titulo}</Text>
-                  <Text style={styles.metaStatus}>{meta.status}</Text>
-                </View>
-                <ProgressBar
-                  progress={meta.objetivo_numerico && meta.objetivo_numerico > 0 ? (calcularDiasSemRecaida(meta) / meta.objetivo_numerico) * 100 : 0}
-                  showPercentage={false}
-                  color={Colors.primary.light}
-                />
-                <Text style={styles.metaProgress}>
-                  {calcularDiasSemRecaida(meta)} de {meta.objetivo_numerico ?? 0} {meta.unidade}
-                </Text>
-              </Card>
+              <TouchableOpacity key={meta.id} onPress={() => router.push(`/meta/${meta.id}`)}>
+                <Card style={styles.metaCard}>
+                  <View style={styles.metaHeader}>
+                    <Target size={18} color={Colors.primary.dark} />
+                    <Text style={styles.metaTitle} numberOfLines={1}>{meta.titulo}</Text>
+                    <Text style={styles.metaStatus}>{meta.status}</Text>
+                  </View>
+                  <ProgressBar progress={meta.progresso || 0} />
+                  <Text style={styles.metaProgress}>
+                    {calcularDiasSemRecaida(meta)} dias sem recaídas
+                  </Text>
+                </Card>
+              </TouchableOpacity>
             ))
           )}
         </View>

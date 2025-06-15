@@ -54,8 +54,42 @@ export default function RegisterScreen() {
       }
 
       if (data && data.user && data.session) {
-        console.log('[RegisterScreen] Cadastro bem-sucedido. Usuário e sessão retornados. Navegando para onboarding.');
-        // A trigger no Supabase deve cuidar da criação do perfil em public.users
+        const { user } = data;
+        if (!user.email) {
+          Alert.alert('Erro no Cadastro', 'Não foi possível obter o email do usuário após o registro. Tente novamente.');
+          setLoading(false);
+          return;
+        }
+
+        console.log('[RegisterScreen] Auth user created. Upserting profile in public.users...');
+
+        // Garante a criação do perfil de usuário, evitando problemas de timing com triggers.
+        const { error: profileError } = await supabase
+          .from('users')
+          .upsert(
+            {
+              auth_user_id: user.id,
+              email: user.email,
+              nome: nome.trim(),
+              // onboarding_completed é 'false' por padrão no banco de dados
+            },
+            {
+              onConflict: 'auth_user_id',
+            }
+          );
+
+        if (profileError) {
+          console.error('[RegisterScreen] Erro ao criar perfil:', profileError);
+          Alert.alert(
+            'Erro no Cadastro',
+            `Seu usuário foi criado, mas houve um erro ao configurar seu perfil: ${profileError.message}. Por favor, tente fazer login.`
+          );
+          router.replace('/(auth)/login');
+          setLoading(false);
+          return;
+        }
+
+        console.log('[RegisterScreen] Cadastro e perfil criados com sucesso. Navegando para onboarding.');
         router.replace('/(auth)/onboarding');
       } else if (data && data.user && !data.session) {
         console.warn('[RegisterScreen] Cadastro retornou usuário, mas SEM SESSÃO. Isso é inesperado com confirmação de email desabilitada.');

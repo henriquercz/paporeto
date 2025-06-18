@@ -8,9 +8,12 @@ import { formatDistanceToNow, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
+import { getCurrentUserId } from '@/lib/userUtils';
+import { useUserId } from '@/hooks/useCurrentUser';
 import CriarTopicoModal from '@/components/modals/CriarTopicoModal';
 import MarcarEncontroModal from '@/components/modals/MarcarEncontroModal';
 import EncontroCard from '@/components/cards/EncontroCard';
+
 
 const getInitials = (name: string | undefined | null): string => {
   if (!name || name.trim() === '') return '';
@@ -46,7 +49,7 @@ export default function ComunidadeScreen() {
   const [marcarEncontroModalVisible, setMarcarEncontroModalVisible] = useState(false);
   const [expandedPosts, setExpandedPosts] = useState<string[]>([]);
   const [filtro, setFiltro] = useState<'todos' | 'relato' | 'dica' | 'ajuda' | 'encontro'>('todos');
-  const [userId, setUserId] = useState<string | undefined>();
+  const { userId, loading: userLoading } = useUserId();
   
   // Estados para comentários e likes
   const [commentsModalVisible, setCommentsModalVisible] = useState(false);
@@ -132,13 +135,7 @@ export default function ComunidadeScreen() {
     fetchTopicos();
   }, [fetchTopicos]);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        setUserId(user?.id);
-    };
-    fetchUser();
-  }, []);
+  // Hook useUserId já gerencia o estado do usuário
 
   const topicosFiltrados = useMemo(() => {
     if (filtro === 'todos') {
@@ -160,8 +157,8 @@ export default function ComunidadeScreen() {
     handleCloseCriarTopicoModal();
     // Lógica de pontuação
     try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        const currentUserId = await getCurrentUserId();
+        if (!currentUserId) return;
   
         const today = new Date();
         const startOfToday = startOfDay(today).toISOString();
@@ -170,7 +167,7 @@ export default function ComunidadeScreen() {
         const { data: existingPoints, error: pointsError } = await supabase
           .from('pontos')
           .select('id')
-          .eq('user_id', user.id)
+          .eq('user_id', currentUserId)
           .eq('motivo', 'post_comunidade')
           .gte('data', startOfToday)
           .lte('data', endOfToday)
@@ -183,7 +180,7 @@ export default function ComunidadeScreen() {
   
         if (!existingPoints || existingPoints.length === 0) {
           const { error: insertError } = await supabase.from('pontos').insert({
-            user_id: user.id,
+            user_id: currentUserId,
             quantidade: 1,
             motivo: 'post_comunidade',
           });
@@ -207,8 +204,15 @@ export default function ComunidadeScreen() {
 
   // Funções para likes e comentários
   const handleLike = useCallback(async (postId: string) => {
-    if (!userId || likingPosts.includes(postId)) return;
-    
+    if (!userId) {
+      Alert.alert('Erro', 'Você precisa estar logado para curtir um post.');
+      return;
+    }
+
+    if (likingPosts.includes(postId)) {
+      return; // Evita múltiplos cliques
+    }
+
     setLikingPosts(prev => [...prev, postId]);
     
     try {
@@ -311,7 +315,10 @@ export default function ComunidadeScreen() {
   }, []);
 
   const handleAddComment = useCallback(async () => {
-    if (!newComment.trim() || !selectedPostId || !userId) return;
+    if (!newComment.trim() || !selectedPostId || !userId) {
+      Alert.alert('Erro', 'Comentário não pode estar vazio.');
+      return;
+    }
     
     try {
       // Inserir comentário no banco de dados
@@ -520,6 +527,8 @@ export default function ComunidadeScreen() {
       />
 
       <FloatingActionButton onPress={handleOpenCriarTopicoModal} />
+
+
 
       <CriarTopicoModal
         isVisible={criarTopicoModalVisible}

@@ -1,121 +1,38 @@
-[{
-	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
-	"owner": "typescript",
-	"code": "2769",
-	"severity": 8,
-	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type '\"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type 'never'.",
-	"source": "ts",
-	"startLineNumber": 88,
-	"startColumn": 19,
-	"endLineNumber": 88,
-	"endColumn": 32,
-	"extensionID": "vscode.typescript-language-features"
-},{
-	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
-	"owner": "typescript",
-	"code": "2769",
-	"severity": 8,
-	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"comentarios_forum\"' is not assignable to parameter of type '\"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"comentarios_forum\"' is not assignable to parameter of type 'never'.",
-	"source": "ts",
-	"startLineNumber": 94,
-	"startColumn": 19,
-	"endLineNumber": 94,
-	"endColumn": 38,
-	"extensionID": "vscode.typescript-language-features"
-},{
-	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
-	"owner": "typescript",
-	"code": "2769",
-	"severity": 8,
-	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type '\"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type 'never'.",
-	"source": "ts",
-	"startLineNumber": 102,
-	"startColumn": 21,
-	"endLineNumber": 102,
-	"endColumn": 34,
-	"extensionID": "vscode.typescript-language-features"
-},{
-	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
-	"owner": "typescript",
-	"code": "2769",
-	"severity": 8,
-	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type '\"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type 'never'.",
-	"source": "ts",
-	"startLineNumber": 222,
-	"startColumn": 17,
-	"endLineNumber": 222,
-	"endColumn": 30,
-	"extensionID": "vscode.typescript-language-features"
-},{
-	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
-	"owner": "typescript",
-	"code": "2769",
-	"severity": 8,
-	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type '\"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type 'never'.",
-	"source": "ts",
-	"startLineNumber": 235,
-	"startColumn": 17,
-	"endLineNumber": 235,
-	"endColumn": 30,
-	"extensionID": "vscode.typescript-language-features"
-},{
-	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
-	"owner": "typescript",
-	"code": "2769",
-	"severity": 8,
-	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"comentarios_forum\"' is not assignable to parameter of type '\"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"comentarios_forum\"' is not assignable to parameter of type 'never'.",
-	"source": "ts",
-	"startLineNumber": 277,
-	"startColumn": 15,
-	"endLineNumber": 277,
-	"endColumn": 34,
-	"extensionID": "vscode.typescript-language-features"
-},{
-	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
-	"owner": "typescript",
-	"code": "2352",
-	"severity": 8,
-	"message": "Conversion of type '({ users: { id: string; nome: string; avatar_url: string | null; } | SelectQueryError<\"column 'nome' does not exist on 'users'.\"> | SelectQueryError<\"could not find the relation between agendamentos and users\"> | ... 6 more ... | SelectQueryError<...>; ... 14 more ...; user_id: string; } | ... 1986 more ... | { ...;...' to type 'Comment[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.\n  Type '{ users: { id: string; nome: string; avatar_url: string | null; } | SelectQueryError<\"column 'nome' does not exist on 'users'.\"> | SelectQueryError<\"could not find the relation between agendamentos and users\"> | ... 6 more ... | SelectQueryError<...>; ... 14 more ...; user_id: string; } | ... 1986 more ... | { ...; }' is not comparable to type 'Comment'.\n    Type '{ users: { id: string; nome: string; avatar_url: string | null; } | SelectQueryError<\"column 'nome' does not exist on 'users'.\"> | SelectQueryError<\"could not find the relation between agendamentos and users\"> | ... 6 more ... | SelectQueryError<...>; ... 9 more ...; tipo_vicio: string | null; }' is missing the following properties from type 'Comment': post_id, user_id, conteudo, created_at",
-	"source": "ts",
-	"startLineNumber": 297,
-	"startColumn": 19,
-	"endLineNumber": 297,
-	"endColumn": 49,
-	"extensionID": "vscode.typescript-language-features"
-},{
-	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
-	"owner": "typescript",
-	"code": "2769",
-	"severity": 8,
-	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"comentarios_forum\"' is not assignable to parameter of type '\"chats_forum\" | \"users\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"metas\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"comentarios_forum\"' is not assignable to parameter of type 'never'.",
-	"source": "ts",
-	"startLineNumber": 313,
-	"startColumn": 15,
-	"endLineNumber": 313,
-	"endColumn": 34,
-	"extensionID": "vscode.typescript-language-features"
-},{
-	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
-	"owner": "typescript",
-	"code": "2352",
-	"severity": 8,
-	"message": "Conversion of type '{ users: { id: string; nome: string; avatar_url: string | null; } | SelectQueryError<\"column 'nome' does not exist on 'users'.\"> | SelectQueryError<\"could not find the relation between agendamentos and users\"> | ... 6 more ... | SelectQueryError<...>; ... 14 more ...; user_id: string; } | ... 1986 more ... | { ...; }' to type 'Comment' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.\n  Type '{ users: { id: string; nome: string; avatar_url: string | null; } | SelectQueryError<\"column 'nome' does not exist on 'users'.\"> | SelectQueryError<\"could not find the relation between agendamentos and users\"> | ... 6 more ... | SelectQueryError<...>; ... 9 more ...; tipo_vicio: string | null; }' is missing the following properties from type 'Comment': post_id, user_id, conteudo, created_at",
-	"source": "ts",
-	"startLineNumber": 338,
-	"startColumn": 30,
-	"endLineNumber": 338,
-	"endColumn": 57,
-	"extensionID": "vscode.typescript-language-features"
-},{
-	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
-	"owner": "typescript",
-	"code": "2339",
-	"severity": 8,
-	"message": "Property 'sendButtonDisabled' does not exist on type '{ container: { flex: number; backgroundColor: string; }; loadingContainer: { flex: number; justifyContent: \"center\"; alignItems: \"center\"; backgroundColor: string; }; loadingText: { marginTop: number; fontSize: number; color: string; }; ... 54 more ...; sendButton: { ...; }; }'.",
-	"source": "ts",
-	"startLineNumber": 591,
-	"startColumn": 71,
-	"endLineNumber": 591,
-	"endColumn": 89,
-	"extensionID": "vscode.typescript-language-features"
-}]
+Erro ao adicionar like: {code: '42501', details: null, hint: null, message: 'new row violates row-level security policy for table "likes_forum"'}code: "42501"details: nullhint: nullmessage: "new row violates row-level security policy for table \"likes_forum\""[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
+registerError @ C:\Users\Aluno\pprt\paporeto\node_modules\@expo\metro-runtime\src\error-overlay\LogBox.web.ts:134
+console.error @ C:\Users\Aluno\pprt\paporeto\node_modules\@expo\metro-runtime\src\error-overlay\LogBox.web.ts:59
+(anônimo) @ C:\Users\Aluno\pprt\paporeto\app\(tabs)\comunidade.tsx:239
+await in (anônimo)
+onPress @ C:\Users\Aluno\pprt\paporeto\app\(tabs)\comunidade.tsx:489
+onClick @ C:\Users\Aluno\pprt\paporeto\node_modules\react-native-web\dist\modules\usePressEvents\PressResponder.js:314
+processDispatchQueue @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:16122
+(anônimo) @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:16725
+batchedUpdates$1 @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:3129
+dispatchEventForPluginEventSystem @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:16281
+dispatchEvent @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:20353
+dispatchDiscreteEvent @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:20321
+C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:23 
+            
+            
+            POST https://sleiptiguqzxgmaellzz.supabase.co/rest/v1/comentarios_forum?select=*%2Cusers%28id%2Cnome%2Cavatar_url%29 403 (Forbidden)
+(anônimo) @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:23
+(anônimo) @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:44
+fulfilled @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:4
+Promise.then
+step @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:6
+(anônimo) @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:7
+__awaiter @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:3
+(anônimo) @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:34
+then @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\postgrest-js\dist\cjs\PostgrestBuilder.js:65
+C:\Users\Aluno\pprt\paporeto\node_modules\@expo\metro-runtime\src\error-overlay\LogBox.web.ts:134  Erro ao adicionar comentário: {code: '42501', details: null, hint: null, message: 'new row violates row-level security policy for table "comentarios_forum"'}code: "42501"details: nullhint: nullmessage: "new row violates row-level security policy for table \"comentarios_forum\""[[Prototype]]: Object
+registerError @ C:\Users\Aluno\pprt\paporeto\node_modules\@expo\metro-runtime\src\error-overlay\LogBox.web.ts:134
+console.error @ C:\Users\Aluno\pprt\paporeto\node_modules\@expo\metro-runtime\src\error-overlay\LogBox.web.ts:59
+(anônimo) @ C:\Users\Aluno\pprt\paporeto\app\(tabs)\comunidade.tsx:328
+await in (anônimo)
+onClick @ C:\Users\Aluno\pprt\paporeto\node_modules\react-native-web\dist\modules\usePressEvents\PressResponder.js:314
+processDispatchQueue @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:16122
+(anônimo) @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:16725
+batchedUpdates$1 @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:3129
+dispatchEventForPluginEventSystem @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:16281
+dispatchEvent @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:20353
+dispatchDiscreteEvent @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:20321

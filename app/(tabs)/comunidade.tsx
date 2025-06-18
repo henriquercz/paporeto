@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, RefreshControl, FlatList, Image, ActivityIndicator, Alert } from 'react-native';
-import { Calendar, Users } from 'lucide-react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, RefreshControl, FlatList, Image, ActivityIndicator, Alert, TextInput, Modal, ScrollView } from 'react-native';
+import { Calendar, Users, Heart, MessageCircle, Send, X } from 'lucide-react-native';
 import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
 import { Card } from '@/components/ui/Card';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
@@ -22,6 +22,20 @@ const getInitials = (name: string | undefined | null): string => {
 
 type ChatForumRow = Database['public']['Tables']['chats_forum']['Row'] & {
   users: Database['public']['Tables']['users']['Row'] | null;
+  likes_count?: number;
+  comments_count?: number;
+  user_liked?: boolean;
+};
+
+type Comment = {
+  id: string;
+  post_id: string;
+  user_id: string;
+  conteudo: string;
+  created_at: string;
+  parent_id?: string | null;
+  users: { id: string; nome: string; avatar_url: string | null } | null;
+  replies?: Comment[];
 };
 
 export default function ComunidadeScreen() {
@@ -33,28 +47,78 @@ export default function ComunidadeScreen() {
   const [expandedPosts, setExpandedPosts] = useState<string[]>([]);
   const [filtro, setFiltro] = useState<'todos' | 'relato' | 'dica' | 'ajuda' | 'encontro'>('todos');
   const [userId, setUserId] = useState<string | undefined>();
+  
+  // Estados para comentários e likes
+  const [commentsModalVisible, setCommentsModalVisible] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [likingPosts, setLikingPosts] = useState<string[]>([]);
 
   const fetchTopicos = useCallback(async () => {
     if (!refreshing) setLoading(true);
     try {
-      const response = await supabase
+      // Buscar posts com contadores de likes e comentários
+      const { data: posts, error: postsError } = await supabase
         .from('chats_forum')
-        .select('*, users(id, nome, avatar_url)')
+        .select(`
+          *,
+          users(id, nome, avatar_url)
+        `)
+        .eq('is_deleted', false)
         .order('created_at', { ascending: false });
 
-      const { data, error } = response;
-
-      if (error) {
-        console.error('Erro ao buscar tópicos:', error);
+      if (postsError) {
+        console.error('Erro ao buscar tópicos:', postsError);
         Alert.alert('Erro ao Carregar Tópicos', 'Não foi possível carregar os dados. Tente novamente mais tarde.');
         setTopicos([]);
-      } else if (data) {
-        const processedData = data.map(item => ({
-          ...item,
-          users: Array.isArray(item.users) ? item.users[0] : item.users,
-        }));
-        setTopicos(processedData as ChatForumRow[]);
+        return;
       }
+
+      if (!posts) {
+        setTopicos([]);
+        return;
+      }
+
+      // Buscar contadores de likes e comentários para cada post
+      const postsWithStats = await Promise.all(
+        posts.map(async (post) => {
+          // Contar likes
+          const { count: likesCount } = await supabase
+            .from('likes_forum')
+            .select('*', { count: 'exact', head: true })
+            .eq('post_id', post.id);
+
+          // Contar comentários
+          const { count: commentsCount } = await supabase
+            .from('comentarios_forum')
+            .select('*', { count: 'exact', head: true })
+            .eq('post_id', post.id);
+
+          // Verificar se o usuário atual curtiu
+          let userLiked = false;
+          if (userId) {
+            const { data: userLike } = await supabase
+              .from('likes_forum')
+              .select('id')
+              .eq('post_id', post.id)
+              .eq('user_id', userId)
+              .single();
+            userLiked = !!userLike;
+          }
+
+          return {
+            ...post,
+            users: Array.isArray(post.users) ? post.users[0] : post.users,
+            likes_count: likesCount || 0,
+            comments_count: commentsCount || 0,
+            user_liked: userLiked,
+          };
+        })
+      );
+
+      setTopicos(postsWithStats as ChatForumRow[]);
     } catch (e: any) {
       Alert.alert('Erro Inesperado', `Ocorreu um erro: ${e.message}`);
       setTopicos([]);
@@ -62,7 +126,7 @@ export default function ComunidadeScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [refreshing]);
+  }, [refreshing, userId]);
 
   useEffect(() => {
     fetchTopicos();
@@ -140,6 +204,175 @@ export default function ComunidadeScreen() {
     fetchTopicos();
     handleCloseMarcarEncontroModal();
   }, [fetchTopicos]);
+
+  // Funções para likes e comentários
+  const handleLike = useCallback(async (postId: string) => {
+    if (!userId || likingPosts.includes(postId)) return;
+    
+    setLikingPosts(prev => [...prev, postId]);
+    
+    try {
+      const topic = topicos.find(t => t.id === postId);
+      if (!topic) return;
+      
+      const wasLiked = topic.user_liked;
+      
+      if (wasLiked) {
+        // Remover like
+        const { error } = await supabase
+          .from('likes_forum')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', userId);
+          
+        if (error) {
+          console.error('Erro ao remover like:', error);
+          Alert.alert('Erro', 'Não foi possível remover o like. Tente novamente.');
+          return;
+        }
+      } else {
+        // Adicionar like
+        const { error } = await supabase
+          .from('likes_forum')
+          .insert({
+            post_id: postId,
+            user_id: userId
+          });
+          
+        if (error) {
+          console.error('Erro ao adicionar like:', error);
+          Alert.alert('Erro', 'Não foi possível adicionar o like. Tente novamente.');
+          return;
+        }
+      }
+      
+      // Atualizar estado local
+      setTopicos(prev => prev.map(topic => {
+        if (topic.id === postId) {
+          return {
+            ...topic,
+            user_liked: !wasLiked,
+            likes_count: wasLiked ? (topic.likes_count || 0) - 1 : (topic.likes_count || 0) + 1
+          };
+        }
+        return topic;
+      }));
+    } catch (error) {
+      console.error('Erro inesperado ao curtir post:', error);
+      Alert.alert('Erro', 'Ocorreu um erro inesperado. Tente novamente.');
+    } finally {
+      setLikingPosts(prev => prev.filter(id => id !== postId));
+    }
+  }, [userId, likingPosts, topicos]);
+
+  const handleOpenComments = useCallback((postId: string) => {
+    setSelectedPostId(postId);
+    setCommentsModalVisible(true);
+    fetchComments(postId);
+  }, []);
+
+  const fetchComments = useCallback(async (postId: string) => {
+    setLoadingComments(true);
+    try {
+      const { data: comments, error } = await supabase
+        .from('comentarios_forum')
+        .select(`
+          *,
+          users(id, nome, avatar_url)
+        `)
+        .eq('post_id', postId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar comentários:', error);
+        Alert.alert('Erro', 'Não foi possível carregar os comentários.');
+        setComments([]);
+        return;
+      }
+
+      const processedComments = (comments || []).map(comment => ({
+        id: comment.id,
+        post_id: comment.post_id,
+        user_id: comment.user_id,
+        conteudo: comment.conteudo,
+        created_at: comment.created_at,
+        parent_id: comment.parent_id,
+        users: Array.isArray(comment.users) ? comment.users[0] : comment.users,
+      }));
+      
+      setComments(processedComments);
+    } catch (error) {
+      console.error('Erro ao buscar comentários:', error);
+      Alert.alert('Erro', 'Ocorreu um erro inesperado ao carregar comentários.');
+      setComments([]);
+    } finally {
+      setLoadingComments(false);
+    }
+  }, []);
+
+  const handleAddComment = useCallback(async () => {
+    if (!newComment.trim() || !selectedPostId || !userId) return;
+    
+    try {
+      // Inserir comentário no banco de dados
+      const { data: insertedComment, error } = await supabase
+        .from('comentarios_forum')
+        .insert({
+          post_id: selectedPostId,
+          user_id: userId,
+          conteudo: newComment.trim()
+        })
+        .select(`
+          *,
+          users(id, nome, avatar_url)
+        `)
+        .single();
+
+      if (error) {
+        console.error('Erro ao adicionar comentário:', error);
+        Alert.alert('Erro', 'Não foi possível adicionar o comentário. Tente novamente.');
+        return;
+      }
+
+      if (insertedComment) {
+        const processedComment = {
+          id: insertedComment.id,
+          post_id: insertedComment.post_id,
+          user_id: insertedComment.user_id,
+          conteudo: insertedComment.conteudo,
+          created_at: insertedComment.created_at,
+          parent_id: insertedComment.parent_id,
+          users: Array.isArray(insertedComment.users) ? insertedComment.users[0] : insertedComment.users,
+        };
+        
+        // Adicionar comentário à lista local
+        setComments(prev => [processedComment, ...prev]);
+        setNewComment('');
+        
+        // Atualizar contador de comentários
+        setTopicos(prev => prev.map(topic => {
+          if (topic.id === selectedPostId) {
+            return {
+              ...topic,
+              comments_count: (topic.comments_count || 0) + 1
+            };
+          }
+          return topic;
+        }));
+      }
+      
+    } catch (error) {
+      console.error('Erro ao adicionar comentário:', error);
+      Alert.alert('Erro', 'Ocorreu um erro inesperado ao adicionar comentário.');
+    }
+  }, [newComment, selectedPostId, userId]);
+
+  const handleCloseComments = useCallback(() => {
+    setCommentsModalVisible(false);
+    setSelectedPostId(null);
+    setComments([]);
+    setNewComment('');
+  }, []);
 
   const togglePostExpansion = (postId: string) => {
     setExpandedPosts(prev =>
@@ -252,6 +485,34 @@ export default function ComunidadeScreen() {
                   </TouchableOpacity>
                 )}
               </View>
+              
+              {/* Botões de interação */}
+              <View style={styles.interactionBar}>
+                <TouchableOpacity 
+                  style={[styles.interactionButton, item.user_liked && styles.likedButton]}
+                  onPress={() => handleLike(item.id)}
+                  disabled={likingPosts.includes(item.id)}
+                >
+                  <Heart 
+                    size={18} 
+                    color={item.user_liked ? '#e74c3c' : '#666'} 
+                    fill={item.user_liked ? '#e74c3c' : 'none'}
+                  />
+                  <Text style={[styles.interactionText, item.user_liked && styles.likedText]}>
+                    {item.likes_count || 0}
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.interactionButton}
+                  onPress={() => handleOpenComments(item.id)}
+                >
+                  <MessageCircle size={18} color="#666" />
+                  <Text style={styles.interactionText}>
+                    {item.comments_count || 0}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </Card>
           );
         }}
@@ -275,6 +536,78 @@ export default function ComunidadeScreen() {
         onClose={handleCloseMarcarEncontroModal}
         onEncontroMarcado={handleEncontroMarcado}
       />
+      
+      {/* Modal de Comentários */}
+      <Modal
+        visible={commentsModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={handleCloseComments}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Comentários</Text>
+            <TouchableOpacity onPress={handleCloseComments} style={styles.closeButton}>
+              <X size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.commentsContainer}>
+             {loadingComments ? (
+               <View style={styles.loadingContainer}>
+                 <ActivityIndicator size="large" color="#007AFF" />
+                 <Text style={styles.loadingText}>Carregando comentários...</Text>
+               </View>
+             ) : comments.length > 0 ? (
+               comments.map((comment) => (
+                 <View key={comment.id} style={styles.commentItem}>
+                   <View style={styles.commentHeader}>
+                     <View style={styles.commentAvatarFallback}>
+                       <Text style={styles.commentAvatarText}>
+                         {comment.users?.nome?.charAt(0) || 'U'}
+                       </Text>
+                     </View>
+                     <View style={styles.commentInfo}>
+                       <Text style={styles.commentUserName}>{comment.users?.nome || 'Usuário'}</Text>
+                       <Text style={styles.commentTimestamp}>
+                         {formatDistanceToNow(new Date(comment.created_at), {
+                           addSuffix: true,
+                           locale: ptBR,
+                         })}
+                       </Text>
+                     </View>
+                   </View>
+                   <Text style={styles.commentContent}>{comment.conteudo}</Text>
+                 </View>
+               ))
+             ) : (
+               <View style={styles.emptyCommentsContainer}>
+                 <MessageCircle size={48} color="#ccc" />
+                 <Text style={styles.emptyCommentsText}>Nenhum comentário ainda</Text>
+                 <Text style={styles.emptyCommentsSubtext}>Seja o primeiro a comentar!</Text>
+               </View>
+             )}
+           </ScrollView>
+          
+          <View style={styles.commentInputContainer}>
+            <TextInput
+              style={styles.commentInput}
+              placeholder="Escreva um comentário..."
+              value={newComment}
+              onChangeText={setNewComment}
+              multiline
+              maxLength={500}
+            />
+            <TouchableOpacity 
+              style={[styles.sendButton, !newComment.trim() && styles.sendButtonDisabled]}
+              onPress={handleAddComment}
+              disabled={!newComment.trim()}
+            >
+              <Send size={20} color={newComment.trim() ? '#007AFF' : '#ccc'} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -443,4 +776,148 @@ const styles = StyleSheet.create({
   filterButtonTextSelected: {
     color: Colors.neutral.white,
   },
-});
+  interactionBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingTop: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: Colors.neutral.gray100,
+    gap: Spacing.lg,
+  },
+  interactionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+  },
+  likedButton: {
+    backgroundColor: '#ffeaea',
+  },
+  interactionText: {
+    fontSize: Fonts.sizes.small,
+    color: '#666',
+    fontWeight: Fonts.weights.medium,
+  },
+  likedText: {
+    color: '#e74c3c',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: Colors.neutral.white,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.neutral.gray100,
+  },
+  modalTitle: {
+    fontSize: Fonts.sizes.title,
+    fontWeight: Fonts.weights.bold,
+    color: Colors.neutral.gray800,
+  },
+  closeButton: {
+    padding: Spacing.sm,
+  },
+  commentsContainer: {
+    flex: 1,
+    paddingHorizontal: Spacing.lg,
+  },
+  commentItem: {
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.neutral.gray100,
+  },
+  commentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  commentAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: Spacing.sm,
+  },
+  commentAvatarFallback: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.neutral.gray100,
+    marginRight: Spacing.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  commentAvatarText: {
+    fontSize: Fonts.sizes.small,
+    fontWeight: Fonts.weights.bold,
+    color: Colors.neutral.gray800,
+  },
+  commentInfo: {
+    flex: 1,
+  },
+  commentUserName: {
+    fontSize: Fonts.sizes.subtitle,
+    fontWeight: Fonts.weights.medium,
+    color: Colors.neutral.gray800,
+  },
+  commentTimestamp: {
+    fontSize: Fonts.sizes.small,
+    color: Colors.neutral.gray400,
+  },
+  commentContent: {
+    fontSize: Fonts.sizes.body,
+    color: Colors.neutral.gray800,
+    lineHeight: Fonts.sizes.body * 1.4,
+  },
+  emptyCommentsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: Spacing.xxl,
+  },
+  emptyCommentsText: {
+    fontSize: Fonts.sizes.body,
+    fontWeight: Fonts.weights.medium,
+    color: Colors.neutral.gray400,
+    marginTop: Spacing.md,
+  },
+  emptyCommentsSubtext: {
+    fontSize: Fonts.sizes.small,
+    color: Colors.neutral.gray400,
+    marginTop: Spacing.xs,
+  },
+  commentInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: Colors.neutral.gray100,
+    backgroundColor: Colors.neutral.white,
+  },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: Colors.neutral.gray100,
+    borderRadius: BorderRadius.lg,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    fontSize: Fonts.sizes.body,
+    maxHeight: 100,
+    marginRight: Spacing.sm,
+  },
+  sendButton: {
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.lg,
+  },
+  sendButtonDisabled: {
+    opacity: 0.5,
+  },
+ });

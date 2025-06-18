@@ -32,7 +32,20 @@ export default function LoginScreen() {
       }
 
       if (data.user) {
-        router.replace('/(tabs)');
+        // Verificar se o usuário completou o onboarding
+        const { data: profile } = await supabase
+          .from('users')
+          .select('onboarding_completed')
+          .eq('auth_user_id', data.user.id)
+          .single();
+
+        const onboardingCompleted = profile?.onboarding_completed ?? false;
+        
+        if (onboardingCompleted) {
+          router.replace('/(tabs)');
+        } else {
+          router.replace('/(auth)/onboarding');
+        }
       }
     } catch (error) {
       Alert.alert('Erro', 'Ocorreu um erro inesperado');

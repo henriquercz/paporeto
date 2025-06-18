@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Stack, router, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
@@ -72,9 +72,12 @@ export default function RootLayout() {
 
           const onboardingCompleted = profile?.onboarding_completed ?? false;
           const inOnboarding = (segments as string[]).includes('onboarding');
+          const inLogin = (segments as string[]).includes('login');
+          const inRegister = (segments as string[]).includes('register');
 
           if (!onboardingCompleted) {
-            if (!inOnboarding) {
+            // Só redireciona para onboarding se não estiver em login/register e não estiver já no onboarding
+            if (!inOnboarding && !inLogin && !inRegister) {
               router.replace('/(auth)/onboarding');
             }
           } else {

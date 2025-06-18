@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 
 import { router, useFocusEffect } from 'expo-router';
@@ -197,19 +197,23 @@ export default function HomeScreen() {
             </Card>
           ) : (
             metas.slice(0, 3).map((meta) => (
-              <TouchableOpacity key={meta.id} onPress={() => router.push(`/meta/${meta.id}`)}>
-                <Card style={styles.metaCard}>
-                  <View style={styles.metaHeader}>
-                    <Target size={18} color={Colors.primary.dark} />
-                    <Text style={styles.metaTitle} numberOfLines={1}>{meta.titulo}</Text>
-                    <Text style={styles.metaStatus}>{meta.status}</Text>
-                  </View>
-                  <ProgressBar progress={meta.progresso || 0} />
-                  <Text style={styles.metaProgress}>
-                    {calcularDiasSemRecaida(meta)} dias sem recaídas
-                  </Text>
-                </Card>
-              </TouchableOpacity>
+              <Card key={meta.id} style={styles.metaCard}>
+                <View style={styles.metaHeader}>
+                  <Target size={18} color={Colors.primary.dark} />
+                  <Text style={styles.metaTitle} numberOfLines={1}>{meta.titulo}</Text>
+                  <Text style={styles.metaStatus}>{meta.status}</Text>
+                </View>
+                <ProgressBar progress={meta.progresso || 0} />
+                <Text style={styles.metaProgress}>
+                  {calcularDiasSemRecaida(meta)} dias sem recaídas
+                </Text>
+                <TouchableOpacity 
+                  style={styles.followButton} 
+                  onPress={() => router.push(`/meta/${meta.id}`)}
+                >
+                  <Text style={styles.followButtonText}>Acompanhar Meta</Text>
+                </TouchableOpacity>
+              </Card>
             ))
           )}
         </View>
@@ -466,5 +470,18 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 100,
+  },
+  followButton: {
+    backgroundColor: Colors.primary.accent,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    marginTop: Spacing.md,
+  },
+  followButtonText: {
+    color: Colors.neutral.white,
+    fontSize: Fonts.sizes.body,
+    fontWeight: Fonts.weights.medium,
   },
 });

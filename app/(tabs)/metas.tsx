@@ -114,30 +114,41 @@ export default function MetasScreen() {
 
   const calcularProgresso = (meta: Tables<'metas'>) => {
     if (!meta.data_inicio || !meta.objetivo_numerico || meta.objetivo_numerico <= 0) {
-      return { dias: 0, porcentagem: 0 };
+      return { dias: 0, porcentagem: 5 }; // Progresso mínimo mesmo para metas inválidas
     }
 
     const dataInicio = new Date(meta.data_inicio);
     const hoje = new Date();
-
-    // O objetivo em dias é convertido para o total de segundos esperado para a meta.
-    const objetivoTotalEmSegundos = meta.objetivo_numerico * 24 * 60 * 60;
-
-    // Calcula a diferença em segundos desde a data de início.
-    const segundosDecorridos = differenceInSeconds(hoje, dataInicio);
-
-    // Se a meta ainda não começou, o progresso é 0.
-    if (segundosDecorridos < 0) {
-      return { dias: 0, porcentagem: 0 };
-    }
-
-    // Calcula a porcentagem de progresso, garantindo que não ultrapasse 100%.
-    const porcentagem = Math.min((segundosDecorridos / objetivoTotalEmSegundos) * 100, 100);
-
-    // Os dias completos ainda são úteis para exibição.
     const diasDecorridos = differenceInDays(hoje, dataInicio);
-
-    return { dias: diasDecorridos < 0 ? 0 : diasDecorridos, porcentagem };
+    const diasCalculados = diasDecorridos < 0 ? 0 : diasDecorridos;
+    const objetivoTotal = meta.objetivo_numerico || 365;
+    
+    // Progresso base mínimo para metas recém-criadas (5% inicial)
+    const progressoMinimo = 5;
+    
+    // Progresso base (linear)
+    const progressoLinear = Math.min((diasCalculados / objetivoTotal) * 100, 100);
+    
+    // Sistema de marcos para tornar mais atrativo
+    let progressoComMarcos = progressoLinear;
+    
+    // Se ainda está no início, dar um boost visual
+    if (diasCalculados === 0) {
+      // Meta recém-criada: mostrar progresso inicial
+      progressoComMarcos = progressoMinimo;
+    } else if (diasCalculados <= 7) {
+      // Nos primeiros 7 dias, cada dia vale mais visualmente (5% a 15%)
+      progressoComMarcos = progressoMinimo + ((diasCalculados / 7) * 10);
+    } else if (diasCalculados <= 30) {
+      // Do dia 8 ao 30, progresso mais acelerado
+      const progressoAdicional = ((diasCalculados - 7) / 23) * 25; // 25% nos próximos 23 dias
+      progressoComMarcos = 15 + progressoAdicional;
+    } else {
+      // Após 30 dias, usar progresso linear normal mas com base mínima de 40%
+      progressoComMarcos = Math.max(40, progressoLinear);
+    }
+    
+    return { dias: diasCalculados, porcentagem: Math.min(progressoComMarcos, 100) };
   };
 
   const toggleExpandMeta = (metaId: string) => {

@@ -8,12 +8,9 @@ import { formatDistanceToNow, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
-import { getCurrentUserId } from '@/lib/userUtils';
-import { useUserId } from '@/hooks/useCurrentUser';
 import CriarTopicoModal from '@/components/modals/CriarTopicoModal';
 import MarcarEncontroModal from '@/components/modals/MarcarEncontroModal';
 import EncontroCard from '@/components/cards/EncontroCard';
-
 
 const getInitials = (name: string | undefined | null): string => {
   if (!name || name.trim() === '') return '';
@@ -49,7 +46,7 @@ export default function ComunidadeScreen() {
   const [marcarEncontroModalVisible, setMarcarEncontroModalVisible] = useState(false);
   const [expandedPosts, setExpandedPosts] = useState<string[]>([]);
   const [filtro, setFiltro] = useState<'todos' | 'relato' | 'dica' | 'ajuda' | 'encontro'>('todos');
-  const { userId, loading: userLoading } = useUserId();
+  const [userId, setUserId] = useState<string | undefined>();
   
   // Estados para comentários e likes
   const [commentsModalVisible, setCommentsModalVisible] = useState(false);
@@ -87,19 +84,24 @@ export default function ComunidadeScreen() {
       // Buscar contadores de likes e comentários para cada post
       const postsWithStats = await Promise.all(
         posts.map(async (post) => {
-          // Contar likes
-          const { count: likesCount } = await supabase
+          // Buscar contagem de likes
+          const { data: likesData } = await supabase
             .from('likes_forum')
-            .select('*', { count: 'exact', head: true })
+            .select('*', { count: 'exact' })
             .eq('post_id', post.id);
+          
+          const likesCount = likesData?.length || 0;
 
-          // Contar comentários
-          const { count: commentsCount } = await supabase
+          // Buscar contagem de comentários
+          const { data: commentsData } = await supabase
             .from('comentarios_forum')
-            .select('*', { count: 'exact', head: true })
-            .eq('post_id', post.id);
+            .select('*', { count: 'exact' })
+            .eq('post_id', post.id)
+            .eq('is_deleted', false);
+          
+          const commentsCount = commentsData?.length || 0;
 
-          // Verificar se o usuário atual curtiu
+          // Verificar se o usuário curtiu o post
           let userLiked = false;
           if (userId) {
             const { data: userLike } = await supabase
@@ -108,14 +110,15 @@ export default function ComunidadeScreen() {
               .eq('post_id', post.id)
               .eq('user_id', userId)
               .single();
+            
             userLiked = !!userLike;
           }
 
           return {
             ...post,
             users: Array.isArray(post.users) ? post.users[0] : post.users,
-            likes_count: likesCount || 0,
-            comments_count: commentsCount || 0,
+            likes_count: likesCount,
+            comments_count: commentsCount,
             user_liked: userLiked,
           };
         })
@@ -135,7 +138,13 @@ export default function ComunidadeScreen() {
     fetchTopicos();
   }, [fetchTopicos]);
 
-  // Hook useUserId já gerencia o estado do usuário
+  useEffect(() => {
+    const fetchUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUserId(user?.id);
+    };
+    fetchUser();
+  }, []);
 
   const topicosFiltrados = useMemo(() => {
     if (filtro === 'todos') {
@@ -157,8 +166,8 @@ export default function ComunidadeScreen() {
     handleCloseCriarTopicoModal();
     // Lógica de pontuação
     try {
-        const currentUserId = await getCurrentUserId();
-        if (!currentUserId) return;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
   
         const today = new Date();
         const startOfToday = startOfDay(today).toISOString();
@@ -167,7 +176,7 @@ export default function ComunidadeScreen() {
         const { data: existingPoints, error: pointsError } = await supabase
           .from('pontos')
           .select('id')
-          .eq('user_id', currentUserId)
+          .eq('user_id', user.id)
           .eq('motivo', 'post_comunidade')
           .gte('data', startOfToday)
           .lte('data', endOfToday)
@@ -180,7 +189,7 @@ export default function ComunidadeScreen() {
   
         if (!existingPoints || existingPoints.length === 0) {
           const { error: insertError } = await supabase.from('pontos').insert({
-            user_id: currentUserId,
+            user_id: user.id,
             quantidade: 1,
             motivo: 'post_comunidade',
           });
@@ -204,15 +213,8 @@ export default function ComunidadeScreen() {
 
   // Funções para likes e comentários
   const handleLike = useCallback(async (postId: string) => {
-    if (!userId) {
-      Alert.alert('Erro', 'Você precisa estar logado para curtir um post.');
-      return;
-    }
-
-    if (likingPosts.includes(postId)) {
-      return; // Evita múltiplos cliques
-    }
-
+    if (!userId || likingPosts.includes(postId)) return;
+    
     setLikingPosts(prev => [...prev, postId]);
     
     try {
@@ -221,35 +223,30 @@ export default function ComunidadeScreen() {
       
       const wasLiked = topic.user_liked;
       
-      if (wasLiked) {
+      // Verificar se o usuário já curtiu o post
+      const { data: existingLike } = await supabase
+        .from('likes_forum')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', userId)
+        .single();
+
+      if (existingLike) {
         // Remover like
-        const { error } = await supabase
+        await supabase
           .from('likes_forum')
           .delete()
-          .eq('post_id', postId)
-          .eq('user_id', userId);
-          
-        if (error) {
-          console.error('Erro ao remover like:', error);
-          Alert.alert('Erro', 'Não foi possível remover o like. Tente novamente.');
-          return;
-        }
+          .eq('id', existingLike.id);
       } else {
         // Adicionar like
-        const { error } = await supabase
+        await supabase
           .from('likes_forum')
           .insert({
             post_id: postId,
             user_id: userId
           });
-          
-        if (error) {
-          console.error('Erro ao adicionar like:', error);
-          Alert.alert('Erro', 'Não foi possível adicionar o like. Tente novamente.');
-          return;
-        }
       }
-      
+
       // Atualizar estado local
       setTopicos(prev => prev.map(topic => {
         if (topic.id === postId) {
@@ -282,29 +279,23 @@ export default function ComunidadeScreen() {
         .from('comentarios_forum')
         .select(`
           *,
-          users(id, nome, avatar_url)
+          users!comentarios_forum_user_id_fkey (
+            id,
+            nome,
+            avatar_url
+          )
         `)
         .eq('post_id', postId)
-        .order('created_at', { ascending: false });
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: true });
 
       if (error) {
         console.error('Erro ao buscar comentários:', error);
-        Alert.alert('Erro', 'Não foi possível carregar os comentários.');
         setComments([]);
         return;
       }
 
-      const processedComments = (comments || []).map(comment => ({
-        id: comment.id,
-        post_id: comment.post_id,
-        user_id: comment.user_id,
-        conteudo: comment.conteudo,
-        created_at: comment.created_at,
-        parent_id: comment.parent_id,
-        users: Array.isArray(comment.users) ? comment.users[0] : comment.users,
-      }));
-      
-      setComments(processedComments);
+      setComments(comments || []);
     } catch (error) {
       console.error('Erro ao buscar comentários:', error);
       Alert.alert('Erro', 'Ocorreu um erro inesperado ao carregar comentários.');
@@ -315,25 +306,16 @@ export default function ComunidadeScreen() {
   }, []);
 
   const handleAddComment = useCallback(async () => {
-    if (!newComment.trim() || !selectedPostId || !userId) {
-      Alert.alert('Erro', 'Comentário não pode estar vazio.');
-      return;
-    }
+    if (!newComment.trim() || !selectedPostId || !userId) return;
     
     try {
-      // Inserir comentário no banco de dados
-      const { data: insertedComment, error } = await supabase
+      const { error } = await supabase
         .from('comentarios_forum')
         .insert({
           post_id: selectedPostId,
           user_id: userId,
           conteudo: newComment.trim()
-        })
-        .select(`
-          *,
-          users(id, nome, avatar_url)
-        `)
-        .single();
+        });
 
       if (error) {
         console.error('Erro ao adicionar comentário:', error);
@@ -341,33 +323,21 @@ export default function ComunidadeScreen() {
         return;
       }
 
-      if (insertedComment) {
-        const processedComment = {
-          id: insertedComment.id,
-          post_id: insertedComment.post_id,
-          user_id: insertedComment.user_id,
-          conteudo: insertedComment.conteudo,
-          created_at: insertedComment.created_at,
-          parent_id: insertedComment.parent_id,
-          users: Array.isArray(insertedComment.users) ? insertedComment.users[0] : insertedComment.users,
-        };
-        
-        // Adicionar comentário à lista local
-        setComments(prev => [processedComment, ...prev]);
-        setNewComment('');
-        
-        // Atualizar contador de comentários
-        setTopicos(prev => prev.map(topic => {
-          if (topic.id === selectedPostId) {
-            return {
-              ...topic,
-              comments_count: (topic.comments_count || 0) + 1
-            };
-          }
-          return topic;
-        }));
-      }
-      
+      // Atualizar contagem de comentários no estado local
+      setTopicos(prev => prev.map(topic => {
+        if (topic.id === selectedPostId) {
+          return {
+            ...topic,
+            comments_count: (topic.comments_count || 0) + 1
+          };
+        }
+        return topic;
+      }));
+
+      // Recarregar comentários
+      fetchComments(selectedPostId);
+      setNewComment('');
+      Alert.alert('Sucesso', 'Comentário adicionado com sucesso!');
     } catch (error) {
       console.error('Erro ao adicionar comentário:', error);
       Alert.alert('Erro', 'Ocorreu um erro inesperado ao adicionar comentário.');
@@ -527,8 +497,6 @@ export default function ComunidadeScreen() {
       />
 
       <FloatingActionButton onPress={handleOpenCriarTopicoModal} />
-
-
 
       <CriarTopicoModal
         isVisible={criarTopicoModalVisible}

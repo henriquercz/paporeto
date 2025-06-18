@@ -106,7 +106,7 @@ export default function LoginScreen() {
             </TouchableOpacity>
 
             <Button
-              title={loading ? "ENTRANDO..." : "AVANÇAR"}
+              text={loading ? "ENTRANDO..." : "AVANÇAR"}
               onPress={handleLogin}
               disabled={loading}
               variant="primary"

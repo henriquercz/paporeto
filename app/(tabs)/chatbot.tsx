@@ -188,40 +188,75 @@ export default function ChatbotScreen() {
     scrollToBottom();
   }, [mensagens]);
 
-  const renderMensagem = (mensagem: Mensagem) => (
-    <View
-      key={mensagem.id}
-      style={[
-        styles.mensagemContainer,
-        mensagem.isUser ? styles.mensagemUsuario : styles.mensagemBot,
-      ]}
-    >
-      <View style={styles.avatarContainer}>
-        {mensagem.isUser ? (
-          <View style={styles.avatarUser}>
-            <User size={16} color={Colors.neutral.white} strokeWidth={2} />
+  const renderDateSeparator = (date: Date) => {
+    const messageDate = date;
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    let dateText;
+    if (messageDate.toDateString() === today.toDateString()) {
+      dateText = 'Hoje';
+    } else if (messageDate.toDateString() === yesterday.toDateString()) {
+      dateText = 'Ontem';
+    } else {
+      dateText = format(messageDate, 'dd/MM/yyyy', { locale: ptBR });
+    }
+
+    return (
+      <View style={styles.dateSeparator}>
+        <View style={styles.dateLine} />
+        <Text style={styles.dateText}>{dateText}</Text>
+        <View style={styles.dateLine} />
+      </View>
+    );
+  };
+
+  const renderMensagem = (mensagem: Mensagem, index: number) => {
+    const previousMessage = index > 0 ? mensagens[index - 1] : null;
+    const showAvatar = !previousMessage || previousMessage.isUser !== mensagem.isUser;
+    
+    // Verificar se precisa mostrar separador de data
+    const showDateSeparator = !previousMessage || 
+      mensagem.timestamp.toDateString() !== previousMessage.timestamp.toDateString();
+
+    return (
+      <View key={mensagem.id}>
+        {showDateSeparator && renderDateSeparator(mensagem.timestamp)}
+        <View
+          style={[
+            styles.mensagemContainer,
+            mensagem.isUser ? styles.mensagemUsuario : styles.mensagemBot,
+          ]}
+        >
+          <View style={styles.avatarContainer}>
+            {mensagem.isUser ? (
+              <View style={styles.avatarUser}>
+                <User size={16} color={Colors.neutral.white} strokeWidth={2} />
+              </View>
+            ) : (
+              <Image source={blobAvatar} style={styles.avatarBotImage} />
+            )}
           </View>
-        ) : (
-          <Image source={blobAvatar} style={styles.avatarBotImage} />
-        )}
+          
+          <View style={[
+            styles.mensagemBubble,
+            mensagem.isUser ? styles.bubbleUsuario : styles.bubbleBot,
+          ]}>
+            <Text style={[
+              styles.mensagemTexto,
+              mensagem.isUser ? styles.textoUsuario : styles.textoBot,
+            ]}>
+              {mensagem.texto}
+            </Text>
+            <Text style={styles.mensagemHora}>
+              {format(mensagem.timestamp, 'HH:mm', { locale: ptBR })}
+            </Text>
+          </View>
+        </View>
       </View>
-      
-      <View style={[
-        styles.mensagemBubble,
-        mensagem.isUser ? styles.bubbleUsuario : styles.bubbleBot,
-      ]}>
-        <Text style={[
-          styles.mensagemTexto,
-          mensagem.isUser ? styles.textoUsuario : styles.textoBot,
-        ]}>
-          {mensagem.texto}
-        </Text>
-        <Text style={styles.mensagemHora}>
-          {format(mensagem.timestamp, 'HH:mm', { locale: ptBR })}
-        </Text>
-      </View>
-    </View>
-  );
+    );
+  };
 
   if (carregandoHistorico) {
     return (
@@ -267,7 +302,7 @@ export default function ChatbotScreen() {
         style={styles.messagesContainer}
         contentContainerStyle={styles.messagesContent}
       >
-        {mensagens.map(renderMensagem)}
+        {mensagens.map((mensagem, index) => renderMensagem(mensagem, index))}
         
         {carregando && (
           <View style={[styles.mensagemContainer, styles.mensagemBot]}>
@@ -462,5 +497,21 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: Colors.neutral.gray400,
+  },
+  dateSeparator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: Spacing.lg,
+  },
+  dateLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.neutral.gray300,
+  },
+  dateText: {
+    fontSize: Fonts.sizes.small,
+    color: Colors.neutral.gray500,
+    marginHorizontal: Spacing.md,
+    fontWeight: Fonts.weights.medium,
   },
 });

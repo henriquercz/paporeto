@@ -1,38 +1,293 @@
-Erro ao adicionar like: {code: '42501', details: null, hint: null, message: 'new row violates row-level security policy for table "likes_forum"'}code: "42501"details: nullhint: nullmessage: "new row violates row-level security policy for table \"likes_forum\""[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
-registerError @ C:\Users\Aluno\pprt\paporeto\node_modules\@expo\metro-runtime\src\error-overlay\LogBox.web.ts:134
-console.error @ C:\Users\Aluno\pprt\paporeto\node_modules\@expo\metro-runtime\src\error-overlay\LogBox.web.ts:59
-(anônimo) @ C:\Users\Aluno\pprt\paporeto\app\(tabs)\comunidade.tsx:239
-await in (anônimo)
-onPress @ C:\Users\Aluno\pprt\paporeto\app\(tabs)\comunidade.tsx:489
-onClick @ C:\Users\Aluno\pprt\paporeto\node_modules\react-native-web\dist\modules\usePressEvents\PressResponder.js:314
-processDispatchQueue @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:16122
-(anônimo) @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:16725
-batchedUpdates$1 @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:3129
-dispatchEventForPluginEventSystem @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:16281
-dispatchEvent @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:20353
-dispatchDiscreteEvent @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:20321
-C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:23 
-            
-            
-            POST https://sleiptiguqzxgmaellzz.supabase.co/rest/v1/comentarios_forum?select=*%2Cusers%28id%2Cnome%2Cavatar_url%29 403 (Forbidden)
-(anônimo) @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:23
-(anônimo) @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:44
-fulfilled @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:4
-Promise.then
-step @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:6
-(anônimo) @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:7
-__awaiter @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:3
-(anônimo) @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\supabase-js\dist\module\lib\fetch.js:34
-then @ C:\Users\Aluno\pprt\paporeto\node_modules\@supabase\postgrest-js\dist\cjs\PostgrestBuilder.js:65
-C:\Users\Aluno\pprt\paporeto\node_modules\@expo\metro-runtime\src\error-overlay\LogBox.web.ts:134  Erro ao adicionar comentário: {code: '42501', details: null, hint: null, message: 'new row violates row-level security policy for table "comentarios_forum"'}code: "42501"details: nullhint: nullmessage: "new row violates row-level security policy for table \"comentarios_forum\""[[Prototype]]: Object
-registerError @ C:\Users\Aluno\pprt\paporeto\node_modules\@expo\metro-runtime\src\error-overlay\LogBox.web.ts:134
-console.error @ C:\Users\Aluno\pprt\paporeto\node_modules\@expo\metro-runtime\src\error-overlay\LogBox.web.ts:59
-(anônimo) @ C:\Users\Aluno\pprt\paporeto\app\(tabs)\comunidade.tsx:328
-await in (anônimo)
-onClick @ C:\Users\Aluno\pprt\paporeto\node_modules\react-native-web\dist\modules\usePressEvents\PressResponder.js:314
-processDispatchQueue @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:16122
-(anônimo) @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:16725
-batchedUpdates$1 @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:3129
-dispatchEventForPluginEventSystem @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:16281
-dispatchEvent @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:20353
-dispatchDiscreteEvent @ C:\Users\Aluno\pprt\paporeto\node_modules\react-dom\cjs\react-dom-client.development.js:20321
+[{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2769",
+	"severity": 8,
+	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type '\"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type 'never'.",
+	"source": "ts",
+	"startLineNumber": 89,
+	"startColumn": 19,
+	"endLineNumber": 89,
+	"endColumn": 32,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2769",
+	"severity": 8,
+	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"comentarios_forum\"' is not assignable to parameter of type '\"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"comentarios_forum\"' is not assignable to parameter of type 'never'.",
+	"source": "ts",
+	"startLineNumber": 95,
+	"startColumn": 19,
+	"endLineNumber": 95,
+	"endColumn": 38,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2769",
+	"severity": 8,
+	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type '\"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type 'never'.",
+	"source": "ts",
+	"startLineNumber": 103,
+	"startColumn": 21,
+	"endLineNumber": 103,
+	"endColumn": 34,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2769",
+	"severity": 8,
+	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type '\"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type 'never'.",
+	"source": "ts",
+	"startLineNumber": 223,
+	"startColumn": 17,
+	"endLineNumber": 223,
+	"endColumn": 30,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2769",
+	"severity": 8,
+	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type '\"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"likes_forum\"' is not assignable to parameter of type 'never'.",
+	"source": "ts",
+	"startLineNumber": 236,
+	"startColumn": 17,
+	"endLineNumber": 236,
+	"endColumn": 30,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2769",
+	"severity": 8,
+	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"comentarios_forum\"' is not assignable to parameter of type '\"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"comentarios_forum\"' is not assignable to parameter of type 'never'.",
+	"source": "ts",
+	"startLineNumber": 278,
+	"startColumn": 15,
+	"endLineNumber": 278,
+	"endColumn": 34,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2339",
+	"severity": 8,
+	"message": "Property 'post_id' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; } | ... 1986 more ... | { ...; }'.\n  Property 'post_id' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; }'.",
+	"source": "ts",
+	"startLineNumber": 295,
+	"startColumn": 26,
+	"endLineNumber": 295,
+	"endColumn": 33,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2339",
+	"severity": 8,
+	"message": "Property 'user_id' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; } | ... 1986 more ... | { ...; }'.\n  Property 'user_id' does not exist on type '{ author_name: string | null; body: string | null; content_type: string; cover_image_url: string | null; created_at: string; description: string | null; id: string; is_premium: boolean | null; ... 5 more ...; users: { ...; }[]; }'.",
+	"source": "ts",
+	"startLineNumber": 296,
+	"startColumn": 26,
+	"endLineNumber": 296,
+	"endColumn": 33,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2339",
+	"severity": 8,
+	"message": "Property 'conteudo' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; } | ... 1986 more ... | { ...; }'.\n  Property 'conteudo' does not exist on type '{ created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; location_url: string | null; notifications_enabled: boolean | null; ... 7 more ...; users: { ...; }[]; }'.",
+	"source": "ts",
+	"startLineNumber": 297,
+	"startColumn": 27,
+	"endLineNumber": 297,
+	"endColumn": 35,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2339",
+	"severity": 8,
+	"message": "Property 'created_at' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; } | ... 1986 more ... | { ...; }'.\n  Property 'created_at' does not exist on type '{ contexto_adicional: Json; entrada_usuario: string; id: string; resposta_bot: string; timestamp: string; user_id: string; users: { id: string; nome: string; avatar_url: string | null; }[]; }'.",
+	"source": "ts",
+	"startLineNumber": 298,
+	"startColumn": 29,
+	"endLineNumber": 298,
+	"endColumn": 39,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2339",
+	"severity": 8,
+	"message": "Property 'parent_id' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; } | ... 1986 more ... | { ...; }'.\n  Property 'parent_id' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; }'.",
+	"source": "ts",
+	"startLineNumber": 299,
+	"startColumn": 28,
+	"endLineNumber": 299,
+	"endColumn": 37,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2345",
+	"severity": 8,
+	"message": "Argument of type '{ id: string | number; post_id: any; user_id: any; conteudo: any; created_at: any; parent_id: any; users: { id: string; nome: string; avatar_url: string | null; } | SelectQueryError<\"could not find the relation between agendamentos and users\"> | ... 7 more ... | SelectQueryError<...>; }[]' is not assignable to parameter of type 'SetStateAction<Comment[]>'.\n  Type '{ id: string | number; post_id: any; user_id: any; conteudo: any; created_at: any; parent_id: any; users: { id: string; nome: string; avatar_url: string | null; } | SelectQueryError<\"could not find the relation between agendamentos and users\"> | ... 7 more ... | SelectQueryError<...>; }[]' is not assignable to type 'Comment[]'.\n    Type '{ id: string | number; post_id: any; user_id: any; conteudo: any; created_at: any; parent_id: any; users: { id: string; nome: string; avatar_url: string | null; } | SelectQueryError<\"could not find the relation between agendamentos and users\"> | ... 7 more ... | SelectQueryError<...>; }' is not assignable to type 'Comment'.\n      Types of property 'id' are incompatible.\n        Type 'string | number' is not assignable to type 'string'.\n          Type 'number' is not assignable to type 'string'.",
+	"source": "ts",
+	"startLineNumber": 303,
+	"startColumn": 19,
+	"endLineNumber": 303,
+	"endColumn": 36,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2769",
+	"severity": 8,
+	"message": "No overload matches this call.\n  Overload 1 of 2, '(relation: \"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"): PostgrestQueryBuilder<...>', gave the following error.\n    Argument of type '\"comentarios_forum\"' is not assignable to parameter of type '\"metas\" | \"agendamentos\" | \"conteudos\" | \"chatbot_conversas\" | \"users\" | \"chats_forum\" | \"chats_forum_participantes\" | \"conteudos_educacionais\" | \"diario_anexos\" | \"diarios\" | \"encontro_participantes\" | \"forum_mensagens\" | \"forum_topicos\" | \"pontos\"'.\n  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ Tables: { agendamentos: { Row: { created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; ... 8 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 12 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.\n    Argument of type '\"comentarios_forum\"' is not assignable to parameter of type 'never'.",
+	"source": "ts",
+	"startLineNumber": 319,
+	"startColumn": 15,
+	"endLineNumber": 319,
+	"endColumn": 34,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2339",
+	"severity": 8,
+	"message": "Property 'post_id' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; } | ... 1986 more ... | { ...; }'.\n  Property 'post_id' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; }'.",
+	"source": "ts",
+	"startLineNumber": 340,
+	"startColumn": 36,
+	"endLineNumber": 340,
+	"endColumn": 43,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2339",
+	"severity": 8,
+	"message": "Property 'user_id' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; } | ... 1986 more ... | { ...; }'.\n  Property 'user_id' does not exist on type '{ author_name: string | null; body: string | null; content_type: string; cover_image_url: string | null; created_at: string; description: string | null; id: string; is_premium: boolean | null; ... 5 more ...; users: { ...; }[]; }'.",
+	"source": "ts",
+	"startLineNumber": 341,
+	"startColumn": 36,
+	"endLineNumber": 341,
+	"endColumn": 43,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2339",
+	"severity": 8,
+	"message": "Property 'conteudo' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; } | ... 1986 more ... | { ...; }'.\n  Property 'conteudo' does not exist on type '{ created_at: string; description: string | null; end_time: string | null; event_type: string | null; id: string; is_recurring: boolean | null; location_url: string | null; notifications_enabled: boolean | null; ... 7 more ...; users: { ...; }[]; }'.",
+	"source": "ts",
+	"startLineNumber": 342,
+	"startColumn": 37,
+	"endLineNumber": 342,
+	"endColumn": 45,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2339",
+	"severity": 8,
+	"message": "Property 'created_at' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; } | ... 1986 more ... | { ...; }'.\n  Property 'created_at' does not exist on type '{ contexto_adicional: Json; entrada_usuario: string; id: string; resposta_bot: string; timestamp: string; user_id: string; users: { id: string; nome: string; avatar_url: string | null; }[]; }'.",
+	"source": "ts",
+	"startLineNumber": 343,
+	"startColumn": 39,
+	"endLineNumber": 343,
+	"endColumn": 49,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2339",
+	"severity": 8,
+	"message": "Property 'parent_id' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; } | ... 1986 more ... | { ...; }'.\n  Property 'parent_id' does not exist on type '{ conteudo: string; created_at: string; data_encontro: string | null; deleted_at: string | null; encontro_data_hora: string | null; encontro_local: string | null; id: string; is_deleted: boolean | null; ... 7 more ...; users: { ...; }; }'.",
+	"source": "ts",
+	"startLineNumber": 344,
+	"startColumn": 38,
+	"endLineNumber": 344,
+	"endColumn": 47,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/comunidade.tsx",
+	"owner": "typescript",
+	"code": "2345",
+	"severity": 8,
+	"message": "Argument of type '(prev: Comment[]) => (Comment | { id: string | number; post_id: any; user_id: any; conteudo: any; created_at: any; parent_id: any; users: { id: string; nome: string; avatar_url: string | null; } | ... 8 more ... | SelectQueryError<...>; })[]' is not assignable to parameter of type 'SetStateAction<Comment[]>'.\n  Type '(prev: Comment[]) => (Comment | { id: string | number; post_id: any; user_id: any; conteudo: any; created_at: any; parent_id: any; users: { id: string; nome: string; avatar_url: string | null; } | ... 8 more ... | SelectQueryError<...>; })[]' is not assignable to type '(prevState: Comment[]) => Comment[]'.\n    Type '(Comment | { id: string | number; post_id: any; user_id: any; conteudo: any; created_at: any; parent_id: any; users: { id: string; nome: string; avatar_url: string | null; } | SelectQueryError<\"could not find the relation between agendamentos and users\"> | ... 7 more ... | SelectQueryError<...>; })[]' is not assignable to type 'Comment[]'.\n      Type 'Comment | { id: string | number; post_id: any; user_id: any; conteudo: any; created_at: any; parent_id: any; users: { id: string; nome: string; avatar_url: string | null; } | SelectQueryError<\"could not find the relation between agendamentos and users\"> | ... 7 more ... | SelectQueryError<...>; }' is not assignable to type 'Comment'.\n        Type '{ id: string | number; post_id: any; user_id: any; conteudo: any; created_at: any; parent_id: any; users: { id: string; nome: string; avatar_url: string | null; } | SelectQueryError<\"could not find the relation between agendamentos and users\"> | ... 7 more ... | SelectQueryError<...>; }' is not assignable to type 'Comment'.\n          Types of property 'id' are incompatible.\n            Type 'string | number' is not assignable to type 'string'.\n              Type 'number' is not assignable to type 'string'.",
+	"source": "ts",
+	"startLineNumber": 349,
+	"startColumn": 21,
+	"endLineNumber": 349,
+	"endColumn": 56,
+	"extensionID": "vscode.typescript-language-features"
+}]
+
+[{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/index.tsx",
+	"owner": "typescript",
+	"code": "2339",
+	"severity": 8,
+	"message": "Property 'pontos' does not exist on type '{ agendamentos: { Row: { created_at: string; data_agendamento: string; descricao: string | null; id: string; status: string | null; titulo: string; user_id: string; }; Insert: { created_at?: string | undefined; ... 5 more ...; user_id: string; }; Update: { ...; }; Relationships: [...]; }; ... 6 more ...; users: { .....'.",
+	"source": "ts",
+	"startLineNumber": 19,
+	"startColumn": 43,
+	"endLineNumber": 19,
+	"endColumn": 51,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/index.tsx",
+	"owner": "typescript",
+	"code": "2345",
+	"severity": 8,
+	"message": "Argument of type '{ id: string; user_id: string; titulo: string; descricao: string | null; tipo_vicio: string; data_inicio: string; data_fim_prevista: string | null; data_fim: string | null; status: string; ... 4 more ...; gemini_content: string | null; }[]' is not assignable to parameter of type 'SetStateAction<{ data_conclusao: string | null; data_fim: string | null; data_fim_prevista: string | null; data_inicio: string; descricao: string; gemini_content: string | null; id: string; objetivo_numerico: number | null; ... 5 more ...; user_id: string; }[]>'.\n  Type '{ id: string; user_id: string; titulo: string; descricao: string | null; tipo_vicio: string; data_inicio: string; data_fim_prevista: string | null; data_fim: string | null; status: string; ... 4 more ...; gemini_content: string | null; }[]' is not assignable to type '{ data_conclusao: string | null; data_fim: string | null; data_fim_prevista: string | null; data_inicio: string; descricao: string; gemini_content: string | null; id: string; objetivo_numerico: number | null; ... 5 more ...; user_id: string; }[]'.\n    Type '{ id: string; user_id: string; titulo: string; descricao: string | null; tipo_vicio: string; data_inicio: string; data_fim_prevista: string | null; data_fim: string | null; status: string; ... 4 more ...; gemini_content: string | null; }' is not assignable to type '{ data_conclusao: string | null; data_fim: string | null; data_fim_prevista: string | null; data_inicio: string; descricao: string; gemini_content: string | null; id: string; objetivo_numerico: number | null; ... 5 more ...; user_id: string; }'.\n      Types of property 'descricao' are incompatible.\n        Type 'string | null' is not assignable to type 'string'.\n          Type 'null' is not assignable to type 'string'.",
+	"source": "ts",
+	"startLineNumber": 60,
+	"startColumn": 31,
+	"endLineNumber": 60,
+	"endColumn": 40,
+	"extensionID": "vscode.typescript-language-features"
+}]
+
+[{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/metas.tsx",
+	"owner": "typescript",
+	"code": "2345",
+	"severity": 8,
+	"message": "Argument of type '{ id: string; user_id: string; tipo_vicio: string; titulo: string; descricao: string | null; objetivo_numerico: number | null; unidade: string | null; data_inicio: string; data_fim_prevista: string | null; ... 4 more ...; progresso: number | null; }[]' is not assignable to parameter of type 'SetStateAction<{ data_conclusao: string | null; data_fim: string | null; data_fim_prevista: string | null; data_inicio: string; descricao: string; gemini_content: string | null; id: string; objetivo_numerico: number | null; ... 5 more ...; user_id: string; }[]>'.\n  Type '{ id: string; user_id: string; tipo_vicio: string; titulo: string; descricao: string | null; objetivo_numerico: number | null; unidade: string | null; data_inicio: string; data_fim_prevista: string | null; ... 4 more ...; progresso: number | null; }[]' is not assignable to type '{ data_conclusao: string | null; data_fim: string | null; data_fim_prevista: string | null; data_inicio: string; descricao: string; gemini_content: string | null; id: string; objetivo_numerico: number | null; ... 5 more ...; user_id: string; }[]'.\n    Type '{ id: string; user_id: string; tipo_vicio: string; titulo: string; descricao: string | null; objetivo_numerico: number | null; unidade: string | null; data_inicio: string; data_fim_prevista: string | null; ... 4 more ...; progresso: number | null; }' is not assignable to type '{ data_conclusao: string | null; data_fim: string | null; data_fim_prevista: string | null; data_inicio: string; descricao: string; gemini_content: string | null; id: string; objetivo_numerico: number | null; ... 5 more ...; user_id: string; }'.\n      Types of property 'descricao' are incompatible.\n        Type 'string | null' is not assignable to type 'string'.\n          Type 'null' is not assignable to type 'string'.",
+	"source": "ts",
+	"startLineNumber": 65,
+	"startColumn": 18,
+	"endLineNumber": 65,
+	"endColumn": 33,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/metas.tsx",
+	"owner": "typescript",
+	"code": "2345",
+	"severity": 8,
+	"message": "Argument of type 'string | null' is not assignable to parameter of type 'string'.\n  Type 'null' is not assignable to type 'string'.",
+	"source": "ts",
+	"startLineNumber": 231,
+	"startColumn": 93,
+	"endLineNumber": 231,
+	"endColumn": 104,
+	"extensionID": "vscode.typescript-language-features"
+},{
+	"resource": "/c:/Users/joaco/Music/paporeto/app/(tabs)/metas.tsx",
+	"owner": "typescript",
+	"code": "2345",
+	"severity": 8,
+	"message": "Argument of type 'string | null' is not assignable to parameter of type 'string'.\n  Type 'null' is not assignable to type 'string'.",
+	"source": "ts",
+	"startLineNumber": 232,
+	"startColumn": 74,
+	"endLineNumber": 232,
+	"endColumn": 85,
+	"extensionID": "vscode.typescript-language-features"
+}]

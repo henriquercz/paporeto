@@ -119,6 +119,86 @@ export default function HomeScreen() {
     return Math.max(0, diasDecorridos);
   };
 
+  // Função para calcular progresso dinâmico e atrativo
+  const calcularProgressoDinamico = (meta: Meta) => {
+    if (!meta.data_inicio || !meta.objetivo_numerico || meta.objetivo_numerico <= 0) {
+      return 5; // Progresso mínimo mesmo para metas inválidas
+    }
+
+    const dataInicio = new Date(meta.data_inicio);
+    const hoje = new Date();
+    const diasDecorridos = differenceInDays(hoje, dataInicio);
+    const diasCalculados = diasDecorridos < 0 ? 0 : diasDecorridos;
+    const objetivoTotal = meta.objetivo_numerico || 365;
+    
+    // Progresso base mínimo para metas recém-criadas (5% inicial)
+    const progressoMinimo = 5;
+    
+    // Progresso base (linear)
+    const progressoLinear = Math.min((diasCalculados / objetivoTotal) * 100, 100);
+    
+    // Sistema de marcos para tornar mais atrativo
+    let progressoComMarcos = progressoLinear;
+    
+    // Se ainda está no início, dar um boost visual
+    if (diasCalculados === 0) {
+      // Meta recém-criada: mostrar progresso inicial
+      progressoComMarcos = progressoMinimo;
+    } else if (diasCalculados <= 7) {
+      // Nos primeiros 7 dias, cada dia vale mais visualmente (5% a 15%)
+      progressoComMarcos = progressoMinimo + ((diasCalculados / 7) * 10);
+    } else if (diasCalculados <= 30) {
+      // Do dia 8 ao 30, progresso mais acelerado
+      const progressoAdicional = ((diasCalculados - 7) / 23) * 25; // 25% nos próximos 23 dias
+      progressoComMarcos = 15 + progressoAdicional;
+    } else {
+      // Após 30 dias, usar progresso linear normal mas com base mínima de 40%
+      progressoComMarcos = Math.max(40, progressoLinear);
+    }
+    
+    return Math.min(progressoComMarcos, 100);
+  };
+
+  // Função para calcular progresso do card principal (mais visual)
+  const calcularProgressoPrincipal = (meta: Meta) => {
+    if (!meta.data_inicio || !meta.objetivo_numerico || meta.objetivo_numerico <= 0) {
+      return 5; // Progresso mínimo mesmo para metas inválidas
+    }
+
+    const dataInicio = new Date(meta.data_inicio);
+    const hoje = new Date();
+    const diasDecorridos = differenceInDays(hoje, dataInicio);
+    const diasCalculados = diasDecorridos < 0 ? 0 : diasDecorridos;
+    const objetivoTotal = meta.objetivo_numerico || 365;
+    
+    // Progresso base mínimo para metas recém-criadas (5% inicial)
+    const progressoMinimo = 5;
+    
+    // Progresso base (linear)
+    const progressoLinear = Math.min((diasCalculados / objetivoTotal) * 100, 100);
+    
+    // Sistema de marcos para tornar mais atrativo
+    let progressoComMarcos = progressoLinear;
+    
+    // Se ainda está no início, dar um boost visual
+    if (diasCalculados === 0) {
+      // Meta recém-criada: mostrar progresso inicial
+      progressoComMarcos = progressoMinimo;
+    } else if (diasCalculados <= 7) {
+      // Nos primeiros 7 dias, cada dia vale mais visualmente (5% a 15%)
+      progressoComMarcos = progressoMinimo + ((diasCalculados / 7) * 10);
+    } else if (diasCalculados <= 30) {
+      // Do dia 8 ao 30, progresso mais acelerado
+      const progressoAdicional = ((diasCalculados - 7) / 23) * 25; // 25% nos próximos 23 dias
+      progressoComMarcos = 15 + progressoAdicional;
+    } else {
+      // Após 30 dias, usar progresso linear normal mas com base mínima de 40%
+      progressoComMarcos = Math.max(40, progressoLinear);
+    }
+    
+    return Math.min(progressoComMarcos, 100);
+  };
+
   const formatarMotivo = (motivo: string | null) => {
     if (!motivo) return '';
     switch (motivo) {
@@ -173,8 +253,10 @@ export default function HomeScreen() {
               </View>
               
               <ProgressBar
-                progress={metas[0] && metas[0].objetivo_numerico ? calcularDiasSemRecaida(metas[0]) / metas[0].objetivo_numerico : calcularDiasSemRecaida(metas[0]) / 30} 
-                color={Colors.primary.accent} 
+                progress={calcularProgressoPrincipal(metas[0])} 
+                color={Colors.primary.accent}
+                showPercentage={true}
+                title="Progresso da Meta"
               />
               <Text style={styles.metaProgress}>
                 Meta: {metas[0].descricao} (Restam {Math.max(0, (metas[0] && metas[0].objetivo_numerico ? metas[0].objetivo_numerico : 30) - calcularDiasSemRecaida(metas[0]))} dias)
@@ -203,7 +285,11 @@ export default function HomeScreen() {
                   <Text style={styles.metaTitle} numberOfLines={1}>{meta.titulo}</Text>
                   <Text style={styles.metaStatus}>{meta.status}</Text>
                 </View>
-                <ProgressBar progress={meta.progresso || 0} />
+                <ProgressBar 
+                  progress={calcularProgressoDinamico(meta)} 
+                  color={Colors.primary.accent}
+                  showPercentage={true}
+                />
                 <Text style={styles.metaProgress}>
                   {calcularDiasSemRecaida(meta)} dias sem recaídas
                 </Text>

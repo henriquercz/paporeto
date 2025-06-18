@@ -31,6 +31,7 @@ type PostType = 'relato' | 'dica' | 'ajuda' | 'encontro';
 // Usamos interseção de tipos (&) para combinar o tipo base com nossa propriedade adicional.
 type CustomChatsForumInsert = Database['public']['Tables']['chats_forum']['Insert'] & {
   post_type?: PostType;
+  is_deleted?: boolean;
 };
 
 interface CriarTopicoModalProps {
@@ -87,8 +88,8 @@ const CriarTopicoModal: React.FC<CriarTopicoModalProps> = ({ isVisible, onClose,
     setLoading(true);
 
     const novoTopico: CustomChatsForumInsert = {
-      topic: titulo.trim(),
-      content: conteudo.trim(),
+      titulo: titulo.trim(),
+      conteudo: conteudo.trim(),
       user_id: userId,
       is_deleted: false,
       upvotes: 0,

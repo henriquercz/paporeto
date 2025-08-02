@@ -506,11 +506,11 @@ const styles = StyleSheet.create({
   dateLine: {
     flex: 1,
     height: 1,
-    backgroundColor: Colors.neutral.gray300,
+    backgroundColor: Colors.neutral.gray100,
   },
   dateText: {
     fontSize: Fonts.sizes.small,
-    color: Colors.neutral.gray500,
+    color: Colors.neutral.gray400,
     marginHorizontal: Spacing.md,
     fontWeight: Fonts.weights.medium,
   },

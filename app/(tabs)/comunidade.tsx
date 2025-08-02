@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, RefreshControl, FlatList, Image, ActivityIndicator, Alert, TextInput, Modal, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, RefreshControl, FlatList, Image, ActivityIndicator, Alert, TextInput, Modal, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Calendar, Users, Heart, MessageCircle, Send, X } from 'lucide-react-native';
 import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
 import { Card } from '@/components/ui/Card';
@@ -59,14 +59,13 @@ export default function ComunidadeScreen() {
   const fetchTopicos = useCallback(async () => {
     if (!refreshing) setLoading(true);
     try {
-      // Buscar posts com contadores de likes e comentários
+      // Buscar posts básicos primeiro
       const { data: posts, error: postsError } = await supabase
         .from('chats_forum')
         .select(`
           *,
           users(id, nome, avatar_url)
         `)
-        .eq('is_deleted', false)
         .order('created_at', { ascending: false });
 
       if (postsError) {
@@ -81,37 +80,36 @@ export default function ComunidadeScreen() {
         return;
       }
 
-      // Buscar contadores de likes e comentários para cada post
+      // Buscar likes e comentários separadamente para cada post
       const postsWithStats = await Promise.all(
         posts.map(async (post) => {
-          // Buscar contagem de likes
-          const { data: likesData } = await supabase
+          // Buscar likes do post
+          const { data: likes } = await supabase
             .from('likes_forum')
-            .select('*', { count: 'exact' })
+            .select('id, user_id')
             .eq('post_id', post.id);
-          
-          const likesCount = likesData?.length || 0;
 
-          // Buscar contagem de comentários
-          const { data: commentsData } = await supabase
+          // Buscar comentários do post
+          const { data: comments } = await supabase
             .from('comentarios_forum')
-            .select('*', { count: 'exact' })
-            .eq('post_id', post.id)
-            .eq('is_deleted', false);
-          
-          const commentsCount = commentsData?.length || 0;
+            .select('id')
+            .eq('post_id', post.id);
 
-          // Verificar se o usuário curtiu o post
+          const likesCount = likes?.length || 0;
+          const commentsCount = comments?.length || 0;
+          
+          // Para verificar se o usuário curtiu, precisamos buscar o user_id interno
           let userLiked = false;
           if (userId) {
-            const { data: userLike } = await supabase
-              .from('likes_forum')
+            const { data: userData } = await supabase
+              .from('users')
               .select('id')
-              .eq('post_id', post.id)
-              .eq('user_id', userId)
+              .eq('auth_user_id', userId)
               .single();
             
-            userLiked = !!userLike;
+            if (userData) {
+              userLiked = likes?.some((like) => like.user_id === userData.id) || false;
+            }
           }
 
           return {
@@ -223,12 +221,25 @@ export default function ComunidadeScreen() {
       
       const wasLiked = topic.user_liked;
       
+      // Primeiro, buscar o user_id interno da tabela users usando o auth.uid()
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', userId)
+        .single();
+
+      if (userError || !userData) {
+        console.error('Erro ao buscar dados do usuário:', userError);
+        Alert.alert('Erro', 'Não foi possível identificar o usuário. Tente fazer login novamente.');
+        return;
+      }
+      
       // Verificar se o usuário já curtiu o post
       const { data: existingLike } = await supabase
         .from('likes_forum')
         .select('id')
         .eq('post_id', postId)
-        .eq('user_id', userId)
+        .eq('user_id', userData.id)
         .single();
 
       if (existingLike) {
@@ -243,7 +254,7 @@ export default function ComunidadeScreen() {
           .from('likes_forum')
           .insert({
             post_id: postId,
-            user_id: userId
+            user_id: userData.id
           });
       }
 
@@ -286,7 +297,6 @@ export default function ComunidadeScreen() {
           )
         `)
         .eq('post_id', postId)
-        .eq('is_deleted', false)
         .order('created_at', { ascending: true });
 
       if (error) {
@@ -309,11 +319,24 @@ export default function ComunidadeScreen() {
     if (!newComment.trim() || !selectedPostId || !userId) return;
     
     try {
+      // Primeiro, buscar o user_id interno da tabela users usando o auth.uid()
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', userId)
+        .single();
+
+      if (userError || !userData) {
+        console.error('Erro ao buscar dados do usuário:', userError);
+        Alert.alert('Erro', 'Não foi possível identificar o usuário. Tente fazer login novamente.');
+        return;
+      }
+
       const { error } = await supabase
         .from('comentarios_forum')
         .insert({
           post_id: selectedPostId,
-          user_id: userId,
+          user_id: userData.id,
           conteudo: newComment.trim()
         });
 
@@ -521,7 +544,11 @@ export default function ComunidadeScreen() {
         presentationStyle="pageSheet"
         onRequestClose={handleCloseComments}
       >
-        <View style={styles.modalContainer}>
+        <KeyboardAvoidingView 
+          style={styles.modalContainer}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 120 : 80}
+        >
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Comentários</Text>
             <TouchableOpacity onPress={handleCloseComments} style={styles.closeButton}>
@@ -583,7 +610,7 @@ export default function ComunidadeScreen() {
               <Send size={20} color={newComment.trim() ? '#007AFF' : '#ccc'} />
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -790,26 +817,34 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: Colors.neutral.gray100,
+    backgroundColor: Colors.neutral.white,
   },
   modalTitle: {
-    fontSize: Fonts.sizes.title,
+    fontSize: Fonts.sizes.subtitle,
     fontWeight: Fonts.weights.bold,
-    color: Colors.neutral.gray800,
+    color: Colors.primary.dark,
   },
   closeButton: {
     padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.neutral.gray100,
   },
   commentsContainer: {
     flex: 1,
+    backgroundColor: Colors.neutral.gray100,
     paddingHorizontal: Spacing.lg,
   },
   commentItem: {
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: Colors.neutral.gray100,
+    backgroundColor: Colors.neutral.white,
+    marginVertical: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
   },
   commentHeader: {
     flexDirection: 'row',
@@ -872,29 +907,47 @@ const styles = StyleSheet.create({
   },
   commentInputContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.lg,
     borderTopWidth: 1,
     borderTopColor: Colors.neutral.gray100,
     backgroundColor: Colors.neutral.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 8,
   },
   commentInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: Colors.neutral.gray100,
+    borderColor: Colors.neutral.gray400,
     borderRadius: BorderRadius.lg,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    marginRight: Spacing.md,
     fontSize: Fonts.sizes.body,
+    color: Colors.neutral.gray800,
+    backgroundColor: Colors.neutral.gray100,
     maxHeight: 100,
-    marginRight: Spacing.sm,
   },
   sendButton: {
-    padding: Spacing.sm,
+    backgroundColor: Colors.primary.dark,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
     borderRadius: BorderRadius.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: Colors.primary.dark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   sendButtonDisabled: {
-    opacity: 0.5,
+    backgroundColor: Colors.neutral.gray400,
+    shadowOpacity: 0,
+    elevation: 0,
   },
  });

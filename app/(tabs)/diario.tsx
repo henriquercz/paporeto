@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Alert, RefreshControl, Image, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import { ArrowLeft, Camera, Mic, Edit3, ChevronDown, Calendar, MicOff, Play, Pause, Paperclip, X } from 'lucide-react-native';
+import { ArrowLeft, Camera, Edit3, ChevronDown, Calendar, Paperclip, X } from 'lucide-react-native';
 import { Colors, Fonts, Spacing, BorderRadius } from '@/constants/Colors';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -11,7 +11,7 @@ import { GeminiService } from '@/lib/gemini';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import * as ImagePicker from 'expo-image-picker';
-import { Audio } from 'expo-av';
+
 
 // Tipos do Supabase
 type Diario = Database['public']['Tables']['diarios']['Row'];
@@ -20,7 +20,7 @@ type DiarioInsert = Database['public']['Tables']['diarios']['Insert'];
 type AnexoInsert = Database['public']['Tables']['diario_anexos']['Insert'];
 
 // Tipos customizados
-type AnexoPendente = { uri: string; tipo: 'foto' | 'audio' };
+type AnexoPendente = { uri: string; tipo: 'foto' };
 type EntradaDiarioCompleta = Diario & { diario_anexos: Anexo[] };
 
 export default function DiarioScreen() {
@@ -28,19 +28,14 @@ export default function DiarioScreen() {
   const [expandedEntry, setExpandedEntry] = useState<string | null>(null);
   const [newEntryText, setNewEntryText] = useState('');
   const [anexosParaSalvar, setAnexosParaSalvar] = useState<AnexoPendente[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dayStreak, setDayStreak] = useState(0);
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
-  const [playingUri, setPlayingUri] = useState<string | null>(null);
 
   useEffect(() => {
     loadEntradas();
-    return sound ? () => { sound.unloadAsync(); } : undefined;
-  }, [sound]);
+  }, []);
 
   const loadEntradas = useCallback(async () => {
     try {
@@ -121,25 +116,74 @@ export default function DiarioScreen() {
       // 2. Fazer upload e salvar os anexos
       if (anexosParaSalvar.length > 0) {
         for (const anexo of anexosParaSalvar) {
-          const blob = await new Promise<Blob>((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.onload = () => resolve(xhr.response);
-            xhr.onerror = (e) => reject(new TypeError('Network request failed'));
-            xhr.responseType = 'blob';
-            xhr.open('GET', anexo.uri, true);
-            xhr.send(null);
-          });
+          // Processando anexo
+          
+          let blob: Blob;
+          let contentType: string;
+          
+          try {
+            // Criar blob de forma mais robusta
+            const response = await fetch(anexo.uri);
+            if (!response.ok) {
+              throw new Error(`Falha ao buscar arquivo: ${response.status}`);
+            }
+            
+            blob = await response.blob();
+            
+            // Verificar se o blob foi criado corretamente
+            if (blob.size === 0) {
+              Alert.alert('Erro', `Falha ao processar ${anexo.tipo}. Arquivo vazio.`);
+              continue;
+            }
+            
+            // Blob criado com sucesso
+            
+            // Determinar content type baseado no tipo de anexo e extensão
+            const fileExt = anexo.uri.split('.').pop()?.toLowerCase();
+            
+            if (anexo.tipo === 'foto') {
+              if (fileExt === 'jpg' || fileExt === 'jpeg') {
+                contentType = 'image/jpeg';
+              } else if (fileExt === 'png') {
+                contentType = 'image/png';
+              } else if (fileExt === 'gif') {
+                contentType = 'image/gif';
+              } else if (fileExt === 'webp') {
+                contentType = 'image/webp';
+              } else {
+                contentType = blob.type || 'image/jpeg';
+              }
+            } else {
+              contentType = blob.type || 'application/octet-stream';
+            }
+            
+            // Recriar blob com content type correto se necessário
+            if (blob.type !== contentType) {
+              const arrayBuffer = await blob.arrayBuffer();
+              blob = new Blob([arrayBuffer], { type: contentType });
+            }
+            
+          } catch (blobError) {
+            Alert.alert('Erro', `Falha ao processar ${anexo.tipo}. Tente novamente.`);
+            continue;
+          }
 
           const fileExt = anexo.uri.split('.').pop();
           const fileName = `${user.id}/${new Date().toISOString().replace(/:/g, '-')}.${fileExt}`;
           
+          // Fazendo upload do anexo
+          
           const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('diario_midia')
-            .upload(fileName, blob, { contentType: blob.type, upsert: false });
+            .from('diario-midia')
+            .upload(fileName, blob, { 
+              contentType: contentType, 
+              upsert: false,
+              cacheControl: '3600'
+            });
 
           if (uploadError) throw uploadError;
 
-          const { data: urlData } = supabase.storage.from('diario_midia').getPublicUrl(uploadData.path);
+          const { data: urlData } = supabase.storage.from('diario-midia').getPublicUrl(uploadData.path);
 
           const newAnexo: AnexoInsert = {
             diario_id: diarioData.id,
@@ -205,7 +249,7 @@ export default function DiarioScreen() {
     }
   };
 
-  const adicionarAnexo = (uri: string, tipo: 'foto' | 'audio') => {
+  const adicionarAnexo = (uri: string, tipo: 'foto') => {
     setAnexosParaSalvar(prev => [...prev, { uri, tipo }]);
   };
 
@@ -245,44 +289,7 @@ export default function DiarioScreen() {
     }
   };
 
-  const iniciarGravacao = async () => {
-    try {
-      await Audio.requestPermissionsAsync();
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-                  const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-      await recording.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-      setRecording(recording);
-      setIsRecording(true);
-    } catch (err) {
-      console.error('Falha ao iniciar gravação', err);
-    }
-  };
 
-  const pararGravacao = async () => {
-    setIsRecording(false);
-    await recording?.stopAndUnloadAsync();
-    const uri = recording?.getURI();
-    if (uri) {
-      adicionarAnexo(uri, 'audio');
-    }
-    setRecording(null);
-  };
-
-  const tocarAudio = async (uri: string) => {
-    if (playingUri === uri) {
-      await sound?.stopAsync();
-      setPlayingUri(null);
-    } else {
-      if (sound) await sound.unloadAsync();
-      const { sound: newSound } = await Audio.Sound.createAsync({ uri });
-      setSound(newSound);
-      setPlayingUri(uri);
-      await newSound.playAsync();
-      newSound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) setPlayingUri(null);
-      });
-    }
-  };
 
   const renderEntrada = (item: EntradaDiarioCompleta) => {
     const isExpanded = expandedEntry === item.id;
@@ -304,12 +311,7 @@ export default function DiarioScreen() {
               {item.diario_anexos?.map(anexo => (
                 <View key={anexo.id}>
                   {anexo.tipo_anexo === 'foto' && <Image source={{ uri: anexo.anexo_url }} style={styles.entryImage} />}
-                  {anexo.tipo_anexo === 'audio' && (
-                    <TouchableOpacity style={styles.audioPlayer} onPress={() => tocarAudio(anexo.anexo_url)}>
-                      {playingUri === anexo.anexo_url ? <Pause size={20} color={Colors.primary.dark} /> : <Play size={20} color={Colors.primary.dark} />}
-                      <Text style={styles.audioPlayerText}>Tocar Áudio</Text>
-                    </TouchableOpacity>
-                  )}
+
                 </View>
               ))}
             </View>
@@ -353,14 +355,7 @@ export default function DiarioScreen() {
           <View style={styles.anexosPendentesContainer}>
             {anexosParaSalvar.map((anexo, index) => (
               <View key={index} style={styles.anexoPendenteItem}>
-                {anexo.tipo === 'foto' ? (
-                  <Image source={{ uri: anexo.uri }} style={styles.anexoPendenteImagem} />
-                ) : (
-                  <View style={styles.anexoPendenteAudio}>
-                    <Mic size={16} color={Colors.primary.dark} />
-                    <Text style={styles.anexoPendenteTexto}>Áudio gravado</Text>
-                  </View>
-                )}
+                <Image source={{ uri: anexo.uri }} style={styles.anexoPendenteImagem} />
                 <TouchableOpacity onPress={() => removerAnexo(anexo.uri)} style={styles.removerAnexoButton}>
                   <X size={16} color={Colors.neutral.white} />
                 </TouchableOpacity>
@@ -373,9 +368,7 @@ export default function DiarioScreen() {
               <TouchableOpacity style={styles.mediaButton} onPress={lidarComFoto}>
                 <Camera size={24} color={Colors.primary.dark} />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.mediaButton, isRecording && styles.recordingButton]} onPress={isRecording ? pararGravacao : iniciarGravacao}>
-                {isRecording ? <MicOff size={24} color={Colors.neutral.white} /> : <Mic size={24} color={Colors.primary.dark} />}
-              </TouchableOpacity>
+
             </View>
             <Button 
               label="Salvar"
@@ -415,7 +408,7 @@ const styles = StyleSheet.create({
   actionButtons: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: Spacing.md },
   mediaButtons: { flexDirection: 'row', gap: Spacing.md },
   mediaButton: { backgroundColor: Colors.primary.light, padding: Spacing.md, borderRadius: BorderRadius.xl },
-  recordingButton: { backgroundColor: Colors.error },
+
   historyTitle: { fontWeight: Fonts.weights.bold, fontSize: Fonts.sizes.title, color: Colors.neutral.gray800, marginBottom: Spacing.md },
   entryCard: { marginBottom: Spacing.md },
   entryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -426,14 +419,13 @@ const styles = StyleSheet.create({
   transcription: { marginTop: Spacing.md, padding: Spacing.md, backgroundColor: Colors.neutral.gray100, borderRadius: BorderRadius.md, fontWeight: Fonts.weights.regular, fontStyle: 'italic', color: Colors.neutral.gray400 },
   anexosContainer: { marginTop: Spacing.md, gap: Spacing.md },
   entryImage: { width: '100%', height: 200, borderRadius: BorderRadius.md },
-  audioPlayer: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, backgroundColor: Colors.neutral.gray100, padding: Spacing.sm, borderRadius: BorderRadius.md, alignSelf: 'flex-start' },
-  audioPlayerText: { fontWeight: Fonts.weights.medium, fontSize: Fonts.sizes.body, color: Colors.primary.dark },
+
   emptyState: { textAlign: 'center', marginTop: Spacing.xxl, fontWeight: Fonts.weights.regular, fontSize: Fonts.sizes.body, color: Colors.neutral.gray400 },
   bottomSpacing: { height: Spacing.xxl },
   anexosPendentesContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, marginTop: Spacing.md },
   anexoPendenteItem: { position: 'relative' },
   anexoPendenteImagem: { width: 60, height: 60, borderRadius: BorderRadius.md },
-  anexoPendenteAudio: { width: 60, height: 60, borderRadius: BorderRadius.md, backgroundColor: Colors.neutral.gray100, justifyContent: 'center', alignItems: 'center' },
+
     anexoPendenteTexto: { fontSize: 12, color: Colors.neutral.gray400, marginTop: Spacing.xs },
   removerAnexoButton: { position: 'absolute', top: -5, right: -5, backgroundColor: Colors.error, borderRadius: 10, padding: 2 },
 });

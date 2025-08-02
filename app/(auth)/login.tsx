@@ -106,12 +106,12 @@ export default function LoginScreen() {
             </TouchableOpacity>
 
             <Button
-              text={loading ? "ENTRANDO..." : "AVANÇAR"}
+              label={loading ? "ENTRANDO..." : "AVANÇAR"}
               onPress={handleLogin}
               disabled={loading}
               variant="primary"
               size="large"
-              style={styles.loginButton}
+              style={{ marginTop: Spacing.lg }}
             />
           </View>
 

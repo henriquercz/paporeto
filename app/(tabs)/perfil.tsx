@@ -12,8 +12,28 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import * as ImagePicker from 'expo-image-picker';
 
-type User = Database['public']['Tables']['users']['Row'];
-type Ponto = Database['public']['Tables']['pontos']['Row'];
+type User = {
+  id: string;
+  auth_user_id: string | null;
+  nome: string;
+  email: string;
+  avatar_url: string | null;
+  data_cadastro: string;
+  tipo_vicio: string | null;
+  nivel_dependencia: string | null;
+  onboarding_completed: boolean;
+  onboarding_concluido: boolean;
+};
+
+type Ponto = {
+  id: string;
+  user_id: string;
+  quantidade: number;
+  motivo: string;
+  data: string;
+  meta_id: string | null;
+  diario_id: string | null;
+};
 
 const formatarMotivo = (motivo: string | null) => {
   if (!motivo) return '';
@@ -99,21 +119,16 @@ export default function PerfilScreen() {
     }
 
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'], // Usando string literal minúscula
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.7, // Reduz a qualidade para otimizar o tamanho
-      base64: true, // Solicita a string base64
+      quality: 0.7,
+      base64: true,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const asset = result.assets[0];
-      const uri = asset.uri;
-
-      console.log('--- DEBUG INÍCIO UPLOAD AVATAR (handlePickImage) ---');
-      console.log('ImagePicker Asset:', JSON.stringify(asset, null, 2));
-      console.log('Image URI:', uri);
-      uploadAvatar(uri, asset.mimeType || asset.type, asset.base64); // Passa o mimeType e base64
+      uploadAvatar(asset.uri, asset.mimeType || asset.type, asset.base64);
     }
   };
 
@@ -121,65 +136,54 @@ export default function PerfilScreen() {
     if (!user) return;
     setLoading(true);
     try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-
-      console.log('Blob Size (após fetch e .blob()):', blob.size);
-      console.log('Blob Type (do blob):', blob.type);
-      const fileExt = uri.split('.').pop()?.toLowerCase(); // Normalizar para minúsculas
-      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-      const filePath = `${user.auth_user_id}/${fileName}`;
-
-    // Lógica aprimorada para determinar o contentType
-    console.log('Asset MimeType recebido em uploadAvatar:', assetMimeType);
-    let determinedContentType = assetMimeType;
-    if (!determinedContentType && blob.type && blob.type !== 'application/octet-stream') {
-        determinedContentType = blob.type;
-    }
-    if ((!determinedContentType || determinedContentType === 'application/octet-stream') && fileExt) {
-        if (fileExt === 'jpg' || fileExt === 'jpeg') {
-            determinedContentType = 'image/jpeg';
-        } else if (fileExt === 'png') {
-            determinedContentType = 'image/png';
-        } else if (fileExt === 'gif') {
-            determinedContentType = 'image/gif';
-        } else if (fileExt === 'webp') {
-            determinedContentType = 'image/webp';
-        }
-        // Adicionar mais tipos conforme necessário
-    }
-    console.log('Determined ContentType para Upload:', determinedContentType);
-    console.log('File Path para Upload:', filePath);
-    console.log('--- DEBUG FIM UPLOAD AVATAR ---');
-
-      if (!base64Data) {
-        console.error('--- ERRO: Dados Base64 não fornecidos para uploadAvatar ---');
-        Alert.alert('Erro', 'Não foi possível processar a imagem para upload (Base64 ausente).');
+      // Verificar se temos dados base64 válidos
+      if (!base64Data || base64Data.length === 0) {
+        Alert.alert('Erro', 'Não foi possível processar a imagem. Tente novamente.');
         setLoading(false);
         return;
       }
 
-      const dataUrl = `data:${assetMimeType || 'image/jpeg'};base64,${base64Data}`;
-      console.log('--- DEBUG: Data URL preparada para upload (primeiros 100 chars):', dataUrl.substring(0, 100));
-      // console.log('--- DEBUG: Comprimento da string Base64:', base64Data.length);
+      // Criar blob a partir dos dados base64
+      const response = await fetch(`data:${assetMimeType || 'image/jpeg'};base64,${base64Data}`);
+      const blob = await response.blob();
+      
+      // Verificar se o blob foi criado corretamente
+      if (blob.size === 0) {
+        Alert.alert('Erro', 'Falha ao processar a imagem. Verifique se a imagem é válida.');
+        setLoading(false);
+        return;
+      }
 
+      const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+      const filePath = `${user.auth_user_id}/${fileName}`;
+
+      // Determinar content type
+      let contentType = assetMimeType || blob.type;
+      if (!contentType || contentType === 'application/octet-stream') {
+        if (fileExt === 'jpg' || fileExt === 'jpeg') {
+          contentType = 'image/jpeg';
+        } else if (fileExt === 'png') {
+          contentType = 'image/png';
+        } else if (fileExt === 'gif') {
+          contentType = 'image/gif';
+        } else if (fileExt === 'webp') {
+          contentType = 'image/webp';
+        } else {
+          contentType = 'image/jpeg';
+        }
+      }
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('avatars')
-        // Ao enviar uma Data URL, o Supabase SDK a decodifica. O terceiro argumento (fileOptions) ainda é útil.
-        .upload(filePath, dataUrl, {
+        .upload(filePath, blob, {
           upsert: true,
           cacheControl: '3600',
-          contentType: assetMimeType || 'image/jpeg', // Adiciona o contentType explicitamente
+          contentType: contentType,
         });
 
       if (uploadError) {
-        console.error('--- ERRO NO UPLOAD DO SUPABASE ---');
-        console.error('Detalhes do Erro:', JSON.stringify(uploadError, null, 2));
         throw uploadError;
       }
-
-      console.log('--- SUCESSO NO UPLOAD DO SUPABASE (segundo o SDK) ---');
-      console.log('Dados do Upload:', JSON.stringify(uploadData, null, 2));
 
       const { data: publicUrlData } = supabase.storage
         .from('avatars')
@@ -311,58 +315,59 @@ export default function PerfilScreen() {
               />
             </View>
             
-            <View style={styles.settingDivider} />
-            
-            <TouchableOpacity style={styles.settingItem}>
-              <View style={styles.settingInfo}>
-                <Settings size={20} color={Colors.primary.dark} strokeWidth={2} />
-                <Text style={styles.settingText}>Preferências</Text>
-              </View>
-            </TouchableOpacity>
+
           </Card>
         </View>
 
         {/* Premium */}
         <Card style={styles.premiumCard}>
-          <View style={[styles.premiumGradient, { backgroundColor: Colors.primary.dark }]}>
-            <Crown size={32} color={Colors.neutral.white} strokeWidth={2} />
-            <View style={styles.premiumInfo}>
-              <Text style={styles.premiumTitle}>PREMIUM!</Text>
+          <View style={styles.premiumGradient}>
+            <View style={styles.premiumHeader}>
+              <Crown size={28} color={Colors.primary.accent} strokeWidth={2} />
+              <View style={styles.premiumInfo}>
+                <Text style={styles.premiumTitle}>Paporeto Premium</Text>
+                <Text style={styles.premiumSubtitle}>Desbloqueie todo o potencial</Text>
+              </View>
+            </View>
+            
+            <View style={styles.premiumPricing}>
               <Text style={styles.premiumPrice}>R$ 27,90</Text>
-              <Text style={styles.premiumPeriod}>Por mês, por 12 meses</Text>
-              <Text style={styles.premiumTotal}>Total de R$ 334,80</Text>
-              <Text style={styles.premiumAnnual}>Plano anual por: 309,90</Text>
+              <Text style={styles.premiumPeriod}>por mês</Text>
             </View>
             
             <View style={styles.premiumFeatures}>
               <View style={styles.premiumFeature}>
-                <Text style={styles.premiumFeatureText}>🚫 Curta o app sem anúncio</Text>
+                <View style={styles.featureIcon}>
+                  <Text style={styles.featureEmoji}>🚫</Text>
+                </View>
+                <Text style={styles.premiumFeatureText}>Experiência sem anúncios</Text>
               </View>
               <View style={styles.premiumFeature}>
-                <Text style={styles.premiumFeatureText}>📞 Contato de profissionais</Text>
+                <View style={styles.featureIcon}>
+                  <Text style={styles.featureEmoji}>👨‍⚕️</Text>
+                </View>
+                <Text style={styles.premiumFeatureText}>Contato com profissionais</Text>
               </View>
               <View style={styles.premiumFeature}>
-                <Text style={styles.premiumFeatureText}>📚 Acesso livre aos conteúdos</Text>
+                <View style={styles.featureIcon}>
+                  <Text style={styles.featureEmoji}>📚</Text>
+                </View>
+                <Text style={styles.premiumFeatureText}>Conteúdo exclusivo</Text>
               </View>
               <View style={styles.premiumFeature}>
-                <Text style={styles.premiumFeatureText}>✅ Tratamento personalizado</Text>
+                <View style={styles.featureIcon}>
+                  <Text style={styles.featureEmoji}>✨</Text>
+                </View>
+                <Text style={styles.premiumFeatureText}>Suporte personalizado</Text>
               </View>
             </View>
 
-            <View style={styles.premiumButtons}>
-              <Button
-                title="ASSINAR"
-                onPress={() => Alert.alert('Premium', 'Funcionalidade em desenvolvimento')}
-                variant="secondary"
-                style={styles.premiumButton}
-              />
-              <Button
-                title="ASSINAR ANUAL"
-                onPress={() => Alert.alert('Premium', 'Funcionalidade em desenvolvimento')}
-                variant="secondary"
-                style={styles.premiumButton}
-              />
-            </View>
+            <TouchableOpacity 
+              style={styles.premiumButton}
+              onPress={() => Alert.alert('Premium', 'Funcionalidade em desenvolvimento')}
+            >
+              <Text style={styles.premiumButtonText}>Assinar Premium</Text>
+            </TouchableOpacity>
           </View>
         </Card>
 
@@ -555,9 +560,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   premiumGradient: {
-    padding: Spacing.lg,
+    padding: Spacing.xl,
+    backgroundColor: Colors.neutral.white,
+    borderRadius: BorderRadius.lg,
   },
-  premiumContent: {
+  premiumHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
@@ -569,27 +576,25 @@ const styles = StyleSheet.create({
   premiumTitle: {
     fontSize: Fonts.sizes.subtitle,
     fontWeight: Fonts.weights.bold,
-    color: Colors.neutral.white,
+    color: Colors.primary.dark,
+  },
+  premiumSubtitle: {
+    fontSize: Fonts.sizes.small,
+    color: Colors.neutral.gray400,
+    marginTop: 2,
+  },
+  premiumPricing: {
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
   },
   premiumPrice: {
     fontSize: Fonts.sizes.title,
     fontWeight: Fonts.weights.bold,
-    color: Colors.neutral.white,
+    color: Colors.primary.dark,
   },
   premiumPeriod: {
     fontSize: Fonts.sizes.small,
-    color: Colors.neutral.white,
-    opacity: 0.9,
-  },
-  premiumTotal: {
-    fontSize: Fonts.sizes.small,
-    color: Colors.neutral.white,
-    opacity: 0.9,
-  },
-  premiumAnnual: {
-    fontSize: Fonts.sizes.small,
-    color: Colors.neutral.white,
-    opacity: 0.9,
+    color: Colors.neutral.gray600,
   },
   premiumFeatures: {
     gap: Spacing.sm,
@@ -598,18 +603,39 @@ const styles = StyleSheet.create({
   premiumFeature: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  premiumFeatureText: {
-    fontSize: Fonts.sizes.small,
-    color: Colors.neutral.white,
-  },
-  premiumButtons: {
-    flexDirection: 'row',
     gap: Spacing.md,
   },
-  premiumButton: {
+  featureIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.primary.light,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  featureEmoji: {
+    fontSize: 16,
+  },
+  premiumFeatureText: {
+    fontSize: Fonts.sizes.body,
+    color: Colors.neutral.gray800,
     flex: 1,
-    backgroundColor: Colors.neutral.white,
+  },
+  premiumButton: {
+    backgroundColor: Colors.primary.dark,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+    shadowColor: Colors.primary.dark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  premiumButtonText: {
+    fontSize: Fonts.sizes.body,
+    fontWeight: Fonts.weights.bold,
+    color: Colors.neutral.gray400,
   },
   achievementCard: {
     flexDirection: 'row',

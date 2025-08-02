@@ -18,8 +18,25 @@ interface UserProfileData {
   nivel_dependencia: string | null;
 }
 
+type Meta = {
+  id: string;
+  user_id: string;
+  tipo_vicio: string;
+  titulo: string;
+  descricao: string | null;
+  objetivo_numerico: number | null;
+  unidade: string | null;
+  data_inicio: string;
+  data_fim_prevista: string | null;
+  data_fim: string | null;
+  data_conclusao: string | null;
+  status: string;
+  gemini_content: string | null;
+  progresso: number | null;
+};
+
 export default function MetasScreen() {
-  const [metas, setMetas] = useState<Tables<'metas'>[]>([]);
+  const [metas, setMetas] = useState<Meta[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedMeta, setExpandedMeta] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -237,12 +254,12 @@ export default function MetasScreen() {
                         <View style={styles.metaStats}>
                           <View style={styles.statItem}>
                             <Calendar size={16} color={Colors.neutral.gray400} />
-                            <Text style={styles.statText}>Início: {format(new Date(meta.data_inicio), 'dd/MM/yyyy', { locale: ptBR })}</Text>
+                            <Text style={styles.statText}>Início: {format(new Date(meta.data_inicio!), 'dd/MM/yyyy', { locale: ptBR })}</Text>
                           </View>
                           {meta.data_fim_prevista && (
                             <View style={styles.statItem}>
                               <Calendar size={16} color={Colors.neutral.gray400} />
-                              <Text style={styles.statText}>Previsão: {format(new Date(meta.data_fim_prevista), 'dd/MM/yyyy', { locale: ptBR })}</Text>
+                              <Text style={styles.statText}>Previsão: {format(new Date(meta.data_fim_prevista!), 'dd/MM/yyyy', { locale: ptBR })}</Text>
                             </View>
                           )}
                           <View style={styles.statItem}>
@@ -303,21 +320,30 @@ const styles = StyleSheet.create({
   emptyCard: { alignItems: 'center', padding: Spacing.xl, gap: Spacing.lg },
   emptyTitle: { fontSize: Fonts.sizes.subtitle, fontWeight: Fonts.weights.medium, color: Colors.neutral.gray400, textAlign: 'center' },
   createButton: { backgroundColor: Colors.primary.light },
-  metasList: { paddingTop: Spacing.lg },
-  metaCard: { marginBottom: Spacing.md, padding: 0 },
-  metaHeader: { padding: Spacing.md },
-  metaHeaderTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.md },
+  metasList: { paddingTop: Spacing.lg, gap: Spacing.lg },
+  metaCard: { 
+    marginBottom: 0, 
+    padding: 0, 
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderRadius: BorderRadius.lg
+  },
+  metaHeader: { padding: Spacing.lg },
+  metaHeaderTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.lg },
   metaMainInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   deleteButton: { padding: Spacing.xs },
   metaTipo: { fontSize: Fonts.sizes.body, fontWeight: Fonts.weights.medium, color: Colors.primary.dark, flex: 1 },
   metaProgresso: { fontSize: Fonts.sizes.body, fontWeight: Fonts.weights.bold, color: Colors.primary.dark, marginRight: Spacing.sm },
   chevron: { transform: [{ rotate: '0deg' }] },
   chevronExpanded: { transform: [{ rotate: '180deg' }] },
-  statusContainer: { gap: Spacing.sm },
-  statusRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  statusBadge: { paddingHorizontal: Spacing.sm, paddingVertical: 4, borderRadius: BorderRadius.sm },
+  statusContainer: { gap: Spacing.md },
+  statusRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm },
+  statusBadge: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs, borderRadius: BorderRadius.md },
   statusText: { fontSize: Fonts.sizes.small, fontWeight: Fonts.weights.medium, color: Colors.neutral.white },
-  metaExpanded: { borderTopWidth: 1, borderTopColor: Colors.border, padding: Spacing.md, gap: Spacing.lg },
+  metaExpanded: { borderTopWidth: 1, borderTopColor: Colors.neutral.gray100, padding: Spacing.lg, gap: Spacing.lg, backgroundColor: Colors.neutral.gray100 },
   metaDetails: { gap: Spacing.md },
   metaTitle: { fontSize: Fonts.sizes.subtitle, fontWeight: Fonts.weights.bold, color: Colors.primary.dark },
   metaDescription: { fontSize: Fonts.sizes.body, color: Colors.neutral.gray400, lineHeight: 20 },

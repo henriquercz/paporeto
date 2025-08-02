@@ -14,9 +14,44 @@ import { Tables } from '../../lib/database.types';
 import { format, differenceInDays, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-type User = Database['public']['Tables']['users']['Row'];
-type Meta = Database['public']['Tables']['metas']['Row'];
-type Ponto = Database['public']['Tables']['pontos']['Row'];
+type User = {
+  id: string;
+  auth_user_id: string | null;
+  nome: string;
+  email: string;
+  avatar_url: string | null;
+  data_cadastro: string;
+  onboarding_completed: boolean;
+  onboarding_concluido: boolean;
+  nivel_dependencia: string | null;
+  tipo_vicio: string | null;
+};
+
+type Meta = {
+  id: string;
+  user_id: string;
+  titulo: string;
+  descricao: string | null;
+  tipo_vicio: string;
+  data_inicio: string;
+  data_fim_prevista: string | null;
+  data_fim: string | null;
+  status: string;
+  objetivo_numerico: number | null;
+  unidade: string | null;
+  progresso: number | null;
+  data_conclusao: string | null;
+  gemini_content: string | null;
+};
+type Ponto = {
+  id: string;
+  user_id: string;
+  quantidade: number;
+  motivo: string;
+  data: string;
+  diario_id: string | null;
+  meta_id: string | null;
+};
 
 export default function HomeScreen() {
   const [user, setUser] = useState<User | null>(null);
@@ -253,7 +288,7 @@ export default function HomeScreen() {
               </View>
               
               <ProgressBar
-                progress={calcularProgressoPrincipal(metas[0])} 
+                progress={calcularProgressoPrincipal(metas[0]) / 100} 
                 color={Colors.primary.accent}
                 showPercentage={true}
                 title="Progresso da Meta"
@@ -286,7 +321,7 @@ export default function HomeScreen() {
                   <Text style={styles.metaStatus}>{meta.status}</Text>
                 </View>
                 <ProgressBar 
-                  progress={calcularProgressoDinamico(meta)} 
+                  progress={calcularProgressoDinamico(meta) / 100} 
                   color={Colors.primary.accent}
                   showPercentage={true}
                 />

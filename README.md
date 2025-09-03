@@ -189,7 +189,6 @@ npm run type-check   # Verificação de tipos TypeScript
 
 ### Privacidade e Compliance
 - **LGPD Compliant** - Conformidade com Lei Geral de Proteção de Dados
-- **Consentimento Granular** - Controle total sobre permissões
 - **Anonimização** - Dados estatísticos sem identificação pessoal
 - **Direito ao Esquecimento** - Exclusão completa de dados sob demanda
 - **Transparência Total** - Relatórios de uso de dados disponíveis
@@ -226,7 +225,7 @@ npm run type-check   # Verificação de tipos TypeScript
 - [x] **Fórum Comunitário** - Posts, comentários e sistema de likes
 - [x] **Dashboard Analytics** - Métricas e progresso visual
 
-### 🚧 Fase 2 - Funcionalidades Avançadas (Q1 2024)
+### 🚧 Fase 2 - Funcionalidades Avançadas (Q1 2025)
 - [x] **Otimização de Performance** - Consultas otimizadas e cache
 - [x] **Correções de Segurança** - Validação robusta implementada
 
@@ -257,24 +256,6 @@ npm run type-check   # Verificação de tipos TypeScript
 4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
-## 📈 Métricas e Performance
-
-### Indicadores Técnicos
-- **Tempo de Carregamento**: < 2s (primeira tela)
-- **Bundle Size**: < 15MB (otimizado)
-- **Cobertura de Testes**: > 80% (em desenvolvimento)
-- **Performance Score**: 95+ (Lighthouse)
-- **Disponibilidade**: 99.9% (SLA Supabase)
-
-### Métricas de Negócio
-- **Taxa de Retenção**: Monitoramento em tempo real
-- **Engajamento Diário**: Analytics integrado
-- **NPS Score**: Feedback contínuo dos usuários
-- **Tempo de Sessão**: Otimização baseada em dados
 
 ## 🤝 Contribuição e Desenvolvimento
 
@@ -302,20 +283,6 @@ git push origin feature/nova-funcionalidade
 - **Testes Unitários** - Jest + React Native Testing Library
 - **Code Review** - Revisão obrigatória em PRs
 
-## 📞 Suporte e Comunidade
-
-### Canais Oficiais
-- 📧 **Email**: suporte@paporeto.com
-- 💬 **Discord**: [PapoReto Community](https://discord.gg/paporeto)
-- 📱 **WhatsApp**: +55 (11) 99999-9999
-- 🐛 **Issues**: [GitHub Issues](https://github.com/seu-usuario/paporeto/issues)
-- 📚 **Documentação**: [Wiki do Projeto](https://github.com/seu-usuario/paporeto/wiki)
-
-### Para Profissionais de Saúde
-- 🏥 **Parcerias**: parceiros@paporeto.com
-- 📊 **Dados Clínicos**: clinica@paporeto.com
-- 🎓 **Treinamentos**: educacao@paporeto.com
-
 ---
 
 <div align="center">
@@ -324,7 +291,14 @@ git push origin feature/nova-funcionalidade
 
 *Desenvolvido com ❤️ para quem busca uma vida mais saudável*
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+Idealizadores:
+Artur Liu Lima
+Felipe Santos
+Gabriel Moreira
+Guilherme Ferreira
+Henrique Rezende
+
+
 [![Made with React Native](https://img.shields.io/badge/Made%20with-React%20Native-blue.svg)](https://reactnative.dev/)
 [![Powered by Supabase](https://img.shields.io/badge/Powered%20by-Supabase-green.svg)](https://supabase.com/)
 

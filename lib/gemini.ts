@@ -4,7 +4,7 @@
  */
 
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 interface GeminiResponse {
   candidates: Array<{
@@ -34,7 +34,7 @@ export class GeminiService {
             temperature: 0.7,
             topK: 40,
             topP: 0.95,
-            maxOutputTokens: 1024,
+            maxOutputTokens: 8192,
           }
         }),
       });
@@ -43,11 +43,29 @@ export class GeminiService {
         throw new Error(`API Error: ${response.status}`);
       }
 
-      const data: GeminiResponse = await response.json();
-      return data.candidates[0]?.content.parts[0]?.text || 'Resposta não disponível no momento.';
+      const data: any = await response.json();
+
+      if (!data.candidates || !Array.isArray(data.candidates) || data.candidates.length === 0) {
+        console.error('Gemini API retornou sem candidatos. Resposta completa:', JSON.stringify(data, null, 2));
+
+        if (data.promptFeedback) {
+          console.warn('Feedback do prompt:', data.promptFeedback);
+        }
+
+        return 'Desculpe, não consegui gerar uma resposta adequada no momento. Tente reformular sua solicitação.';
+      }
+
+      const text = data.candidates[0]?.content?.parts?.[0]?.text;
+
+      if (!text) {
+        console.error('Texto não encontrado na estrutura do candidato:', JSON.stringify(data.candidates[0], null, 2));
+        return 'Resposta vazia recebida do assistente.';
+      }
+
+      return text;
     } catch (error) {
       console.error('Erro ao chamar Gemini API:', error);
-      return 'Desculpe, não consegui gerar uma resposta no momento. Tente novamente mais tarde.';
+      return 'Desculpe, ocorreu um erro de conexão. Verifique sua internet e tente novamente.';
     }
   }
 

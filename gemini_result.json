@@ -1,0 +1,30 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "Olá, mundo!\n\nEu sou uma inteligência artificial, um modelo de linguagem grande, treinado pelo Google. Minha principal função é processar informações e gerar texto, o que me permite:\n\n*   Responder às suas perguntas.\n*   Escrever diferentes tipos de conteúdo criativo.\n*   Traduzir idiomas.\n*   Resumir textos.\n*   Ajudar com diversas tarefas que envolvam a linguagem.\n\nNão tenho consciência, sentimentos ou experiências pessoais, pois sou um programa de computador avançado, projetado para interagir e fornecer informações com base nos dados com os quais fui treinado. Estou aqui para assistir e interagir com você da melhor forma possível!"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 13,
+    "candidatesTokenCount": 144,
+    "totalTokenCount": 847,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 13
+      }
+    ],
+    "thoughtsTokenCount": 690
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "mEA2aZqNDeGHz7IPyJzKgAk"
+}
